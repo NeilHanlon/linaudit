@@ -1,0 +1,4 @@
+etc/config.toml etc/linaudit/
+etc/waivers.conf etc/linaudit/
+contrib/systemd/linaudit.service usr/lib/systemd/system/
+contrib/systemd/linaudit.timer usr/lib/systemd/system/

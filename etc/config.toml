@@ -1,0 +1,14 @@
+# linaudit: system-wide settings / configuración del sistema
+#
+# Everything here is optional. Command-line options and environment variables
+# take precedence. Todo es opcional: los argumentos y las variables de entorno
+# tienen prioridad.
+
+# System profile: "server", "desktop", "container" or "auto".
+# Without it, linaudit asks on the welcome screen (or auto-detects in cron/scripts).
+# Same as --profile / LINAUDIT_PROFILE.
+#profile = "server"
+
+# Default language for every user: "en" or "es".
+# A user's own choice (~/.config/linaudit/config.toml) and --lang / LINAUDIT_LANG win.
+#language = "en"

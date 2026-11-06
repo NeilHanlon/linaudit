@@ -1,0 +1,18 @@
+[workspace]
+resolver = "3"
+members = ["crates/linaudit-core", "crates/linaudit"]
+
+[workspace.package]
+version = "0.2.0-dev"
+edition = "2024"
+rust-version = "1.85"
+license = "AGPL-3.0-or-later"
+authors = ["Alexia Michelle"]
+homepage = "https://lexiworks.dev/linaudit"
+repository = "https://github.com/alexiarstein/linaudit"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+panic = "unwind" # cada módulo corre con catch_unwind: un panic no debe tirar toda la auditoría

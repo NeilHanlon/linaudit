@@ -1,0 +1,248 @@
+.TH LINAUDIT 1 "2026-11-05" "linaudit 0.2.0" "User Commands"
+.SH NAME
+linaudit \- read\-only security audit for Linux
+.SH SYNOPSIS
+.B linaudit
+.RI [ OPTIONS ]
+.SH DESCRIPTION
+.B linaudit
+checks a Linux system (Debian, Ubuntu, RHEL and derivatives) for common security
+problems and gives it a score from 1 (worst) to 10 (best), together with the list
+of findings sorted by severity and how to fix each one.
+.PP
+It runs more than 100 checks in nine categories: accounts and sudo, SSH,
+filesystem permissions, plaintext secrets, network and firewall, patching,
+persistence and signs of compromise, kernel and service hardening, and common
+server applications (Tomcat, Redis, Docker, PostgreSQL, Samba, Apache, nginx).
+.PP
+.B linaudit
+is strictly read\-only: no check modifies the system, and it never prints the value
+of a secret it finds, only the file and line. The only file it writes on its own
+is the user's language preference (see
+.BR LANGUAGE ).
+.PP
+Run it as root for a complete audit. Without root several checks cannot read what
+they need; they are reported as not evaluated and the score is capped at 6.
+.PP
+In a terminal,
+.B linaudit
+opens an interactive interface: a welcome screen to choose the system profile,
+live progress, and three tabs (Summary, Findings, Categories). Press
+.B ?
+for the keyboard shortcuts. In a pipe, in cron, or with
+.BR \-\-plain ,
+it prints a text report instead.
+.SH OPTIONS
+.TP
+.BI \-\-profile " PROFILE"
+System profile:
+.BR server ,
+.BR desktop ,
+.B container
+or
+.BR auto .
+Without it, the welcome screen asks (or the profile is auto\-detected when there
+is no terminal). See
+.BR PROFILES .
+.TP
+.BR \-y ", " \-\-no\-interactive
+Do not ask for the profile even with a terminal; use auto\-detection.
+.TP
+.B \-\-plain
+Print a text report instead of opening the interactive interface.
+.TP
+.B \-\-json
+Print the report as JSON, for a central collector.
+.TP
+.BI \-\-output " FILE"
+Save the report to
+.I FILE
+(created with mode 600) instead of printing it.
+.TP
+.B \-\-all
+Also list the passed checks (in the interactive interface, start by showing all checks).
+.TP
+.B \-\-fast
+Skip the full filesystem sweeps (SUID/SGID, world\-writable and orphaned files,
+package integrity). Takes seconds instead of minutes.
+.TP
+.BI \-\-category " LIST"
+Run only these categories, separated by commas (for example
+.BR ssh,accounts ).
+The score is then partial. See
+.BR \-\-list\-categories .
+.TP
+.BI \-\-waivers " FILE"
+Read an extra waivers file, besides
+.IR /etc/linaudit/waivers.conf .
+.TP
+.BI \-\-min\-score " N"
+Exit with status 1 if the score is lower than
+.I N
+(1 to 10), or if nothing could be evaluated. Useful in cron, CI and monitoring.
+.TP
+.BI \-\-lang " LANG"
+Interface language:
+.B en
+or
+.BR es .
+.TP
+.B \-\-no\-color
+Do not use colors.
+.TP
+.B \-\-list\-profiles
+List the profiles, mark the one detected on this system, and exit.
+.TP
+.B \-\-list\-categories
+List the categories and exit.
+.TP
+.BR \-h ", " \-\-help
+Show the help and exit.
+.TP
+.BR \-V ", " \-\-version
+Show the version and exit.
+.SH PROFILES
+A profile never hides a check: it either changes its severity or marks it as not
+applicable, and says so in the finding's details.
+.TP
+.B server
+Full criteria: every check with its original severity.
+.TP
+.B desktop
+For personal computers. Relaxes checks meant for corporate servers (legal banner,
+password expiry, log forwarding, fail2ban, services such as cups or avahi) and
+lowers the firewall check from HIGH to MEDIUM.
+.TP
+.B container
+What the host or the container runtime manages (clock, AppArmor/SELinux, auditd,
+firewall, logs, kernel parameters) is marked as not applicable.
+.PP
+The profile is taken, in this order, from
+.BR \-\-profile ,
+.BR LINAUDIT_PROFILE ,
+.B profile
+in
+.IR /etc/linaudit/config.toml ,
+the welcome screen, or auto\-detection.
+.SH SCORE
+Each check weighs according to its severity: CRITICAL 10, HIGH 6, MEDIUM 3, LOW 1,
+INFO 0. A passed check adds its full weight, a warning half of it, a failure
+nothing; not applicable and waived checks do not count. The result is scaled to
+1\(en10 and then capped by the open findings: 3 or more critical caps it at 3, 2
+critical at 4, 1 critical or 5 or more high at 6, and 1 to 4 high at 8. If more
+than 10% of the weight could not be evaluated (usually because of running without
+root), the score is capped at 6 and the evaluation is marked as incomplete.
+.SH WAIVERS
+Findings that are accepted on purpose (for example, a dedicated perimeter firewall)
+can be recorded in
+.IR /etc/linaudit/waivers.conf ,
+one per line:
+.PP
+.RS
+.EX
+NET\-001   # Dedicated perimeter firewall. Ticket INF\-1234
+.EE
+.RE
+.PP
+A waived check is not scored and is listed in the report with its reason.
+.SH LANGUAGE
+The interface, reports and help are available in English and Spanish. The language
+is taken, in this order, from
+.B \-\-lang
+or
+.BR LINAUDIT_LANG ,
+the user's preference in
+.IR ~/.config/linaudit/config.toml ,
+.B language
+in
+.IR /etc/linaudit/config.toml ,
+the locale
+.RB ( LANGUAGE ", " LC_ALL ", " LC_MESSAGES ", " LANG ),
+and finally English.
+.PP
+The first time the interactive interface opens without a chosen language, the
+welcome screen asks for it and saves it in the user's preference file. To choose
+again, delete that file, or press
+.B i
+on the welcome screen. With
+.BR sudo (8),
+the preference of the invoking user is used.
+.PP
+Check IDs and JSON keys are the same in every language.
+.SH ENVIRONMENT
+.TP
+.B LINAUDIT_PROFILE
+Same as
+.BR \-\-profile .
+.TP
+.B LINAUDIT_LANG
+Same as
+.BR \-\-lang .
+.TP
+.B LINAUDIT_CONFIG
+Use this file instead of
+.IR /etc/linaudit/config.toml .
+.TP
+.B LINAUDIT_SCAN_TIMEOUT
+Maximum seconds for each filesystem sweep (default 120).
+.TP
+.B NO_COLOR
+Do not use colors.
+.TP
+.B LINAUDIT_DEBUG
+Set to 1 to show the internal error of a check category that failed.
+.SH FILES
+.TP
+.I /etc/linaudit/config.toml
+System\-wide settings: default
+.B profile
+and
+.BR language .
+.TP
+.I /etc/linaudit/waivers.conf
+Documented waivers.
+.TP
+.I ~/.config/linaudit/config.toml
+The user's language preference.
+.TP
+.I /var/lib/linaudit/latest.json
+Latest report written by
+.BR linaudit.service ,
+which
+.B linaudit.timer
+runs weekly once enabled
+.RB ( "systemctl enable \-\-now linaudit.timer" ).
+.SH EXIT STATUS
+.TP
+.B 0
+The audit ran.
+.TP
+.B 1
+The score is lower than
+.BR \-\-min\-score ,
+or nothing could be evaluated.
+.TP
+.B 2
+Usage error.
+.TP
+.B 130
+Cancelled by the user.
+.SH EXAMPLES
+.EX
+sudo linaudit
+sudo linaudit \-\-plain \-\-profile server
+sudo linaudit \-\-json \-\-output /var/lib/linaudit/latest.json
+sudo linaudit \-\-fast \-\-min\-score 7 \-\-profile server
+.EE
+.SH NOTES
+Reports describe the weaknesses of a machine: keep them private, and send them to a
+collector only over an authenticated, encrypted channel.
+.PP
+Several checks are heuristic and can report false positives; findings are things
+to review, not verdicts.
+.B linaudit
+does not replace a CIS/STIG compliance audit, a forensic analysis or an EDR.
+.SH SEE ALSO
+More information: <https://lexiworks.dev/linaudit>
+.SH AUTHOR
+Alexia Michelle. License: AGPL\-3.0\-or\-later.

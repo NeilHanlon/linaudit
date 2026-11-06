@@ -1,0 +1,33 @@
+# Build and Release Folders
+bin-debug/
+bin-release/
+[Oo]bj/
+[Bb]in/
+
+# Other files and folders
+.settings/
+
+# Executables
+*.swf
+*.air
+*.ipa
+*.apk
+
+# Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
+# should NOT be excluded as they contain compiler settings and other important
+# information for Eclipse / Flash Builder.
+
+# Rust
+/target/
+
+# Debian build artifacts
+/debian/.debhelper/
+/debian/cargo_home/
+/debian/cargo_registry/
+/debian/debhelper-build-stamp
+/debian/files
+/debian/linaudit/
+/debian/linaudit-dbgsym/
+/debian/*.substvars
+/debian/*.debhelper.log
+/debian/Cargo.lock.upstream

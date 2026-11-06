@@ -1,0 +1,62 @@
+#!/usr/bin/make -f
+# linaudit is a Cargo workspace (linaudit-core + linaudit) that is not published on
+# crates.io, so it is built with the Debian cargo wrapper against the system crate
+# registry instead of the dh-cargo buildsystem (which expects a single crate).
+
+include /usr/share/dpkg/pkg-info.mk
+include /usr/share/dpkg/architecture.mk
+include /usr/share/dpkg/buildflags.mk
+include /usr/share/rustc/architecture.mk
+export CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
+export DEB_HOST_RUST_TYPE DEB_HOST_GNU_TYPE
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+export CARGO_HOME = $(CURDIR)/debian/cargo_home
+export DEB_CARGO_CRATE = linaudit_$(DEB_VERSION_UPSTREAM)
+CARGO = /usr/share/cargo/bin/cargo
+DH_CARGO_BUILT_USING ?= /usr/share/cargo/bin/dh-cargo-built-using
+
+RELEASE = target/$(DEB_HOST_RUST_TYPE)/release
+PKG = debian/linaudit
+# keep debug symbols for the -dbgsym package; dh_strip does the stripping
+CARGO_FLAGS = --release --config profile.release.strip=false
+
+%:
+	dh $@
+
+# Cargo.lock pins crates.io versions; the build resolves against the Debian registry instead.
+execute_before_dh_auto_configure:
+	if [ -f Cargo.lock ]; then mv Cargo.lock debian/Cargo.lock.upstream; fi
+
+override_dh_auto_configure:
+	$(CARGO) prepare-debian $(CURDIR)/debian/cargo_registry --link-from-system
+
+override_dh_auto_build:
+	$(CARGO) build $(CARGO_FLAGS) --workspace
+
+override_dh_auto_test:
+	$(CARGO) test $(CARGO_FLAGS) --workspace
+
+override_dh_auto_install:
+	install -D -m 0755 $(RELEASE)/linaudit $(PKG)/usr/bin/linaudit
+ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
+	# shell completions come from the built binary (not possible when cross-building)
+	install -d $(PKG)/usr/share/bash-completion/completions \
+		$(PKG)/usr/share/zsh/vendor-completions \
+		$(PKG)/usr/share/fish/vendor_completions.d
+	LINAUDIT_LANG=en $(RELEASE)/linaudit --completions bash > $(PKG)/usr/share/bash-completion/completions/linaudit
+	LINAUDIT_LANG=en $(RELEASE)/linaudit --completions zsh > $(PKG)/usr/share/zsh/vendor-completions/_linaudit
+	LINAUDIT_LANG=en $(RELEASE)/linaudit --completions fish > $(PKG)/usr/share/fish/vendor_completions.d/linaudit.fish
+endif
+	$(DH_CARGO_BUILT_USING) linaudit
+
+# the weekly timer ships disabled: the admin decides whether to run audits periodically
+override_dh_installsystemd:
+	dh_installsystemd --no-enable --no-start
+
+override_dh_auto_clean:
+	if [ -d $(CARGO_HOME) ]; then $(CARGO) clean; fi
+	rm -rf debian/cargo_home debian/cargo_registry target
+
+execute_after_dh_auto_clean:
+	if [ -f debian/Cargo.lock.upstream ]; then mv debian/Cargo.lock.upstream Cargo.lock; fi

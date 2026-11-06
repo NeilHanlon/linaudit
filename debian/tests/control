@@ -1,0 +1,16 @@
+Test-Command: linaudit --version && linaudit --list-categories && linaudit --list-profiles
+Features: test-name=cli
+Restrictions: superficial
+
+Test-Command: linaudit --plain --fast --profile server --lang en > "$AUTOPKGTEST_ARTIFACTS/report.txt" && grep -q "SCORE:" "$AUTOPKGTEST_ARTIFACTS/report.txt"
+Features: test-name=audit-text
+Restrictions: allow-stderr
+
+Test-Command: linaudit --json --fast --profile container | python3 -c 'import json, sys; r = json.load(sys.stdin); assert r["schema"] == 1 and r["results"], r'
+Depends: @, python3
+Features: test-name=audit-json
+Restrictions: allow-stderr
+
+Test-Command: linaudit --json --fast --profile server
+Features: test-name=audit-root
+Restrictions: needs-root, allow-stderr

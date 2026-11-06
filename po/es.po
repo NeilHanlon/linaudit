@@ -1,0 +1,2873 @@
+# Traducción al castellano de linaudit.
+# Copyright (C) Alexia Michelle
+# This file is distributed under the same license as the linaudit package (AGPL-3.0-or-later).
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: linaudit\n"
+"Report-Msgid-Bugs-To: https://github.com/alexiarstein/linaudit/issues\n"
+"Last-Translator: Alexia Michelle\n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: crates/linaudit/src/cli.rs
+msgid "Read-only security audit for Linux."
+msgstr "Auditoría de seguridad de solo lectura para Linux."
+
+#: crates/linaudit/src/cli.rs
+msgid ""
+"Read-only security audit for Linux. It gives a score from 1 (worst) to 10 (best) and the list of findings sorted by severity, with how to fix them.\n"
+"\n"
+"Run it as root: without root several checks cannot read what they need."
+msgstr ""
+"Auditoría de seguridad de solo lectura para Linux. Devuelve un puntaje de 1 (peor) a 10 (mejor) y la lista de hallazgos ordenada por gravedad, con cómo arreglarlos.\n"
+"\n"
+"Conviene correrlo como root: sin root varios controles no pueden leer lo que necesitan."
+
+#: crates/linaudit/src/cli.rs
+msgid "System profile. Without it, a menu is shown if there is a terminal; otherwise it is auto-detected."
+msgstr "Perfil del sistema. Sin este argumento se muestra un menú si hay terminal, o se autodetecta."
+
+#: crates/linaudit/src/cli.rs
+msgid "Do not show the profile menu even with a terminal (use auto-detection)."
+msgstr "No mostrar el menú de perfil aunque haya terminal (usa la autodetección)."
+
+#: crates/linaudit/src/cli.rs
+msgid "List the available profiles and exit."
+msgstr "Listar los perfiles disponibles y salir."
+
+#: crates/linaudit/src/cli.rs
+msgid "List the available categories and exit."
+msgstr "Listar las categorías disponibles y salir."
+
+#: crates/linaudit/src/cli.rs
+msgid "JSON output (for a central collector)."
+msgstr "Salida JSON (para un colector central)."
+
+#: crates/linaudit/src/cli.rs
+msgid "Text report instead of the interactive interface (TUI)."
+msgstr "Reporte de texto en vez de la interfaz interactiva (TUI)."
+
+#: crates/linaudit/src/cli.rs
+msgid "Also include passed checks (in the TUI: start by showing all of them)."
+msgstr "Incluir también los controles aprobados (en la TUI: arrancar mostrando todos)."
+
+#: crates/linaudit/src/cli.rs
+msgid "Skip the full filesystem sweeps (SUID, world-writable, etc.)."
+msgstr "Saltear los barridos completos de filesystem (SUID, world-writable, etc.)."
+
+#: crates/linaudit/src/cli.rs
+msgid "Run only these categories (e.g. ssh,accounts)."
+msgstr "Correr solo estas categorías (ej: ssh,accounts)."
+
+#: crates/linaudit/src/cli.rs
+msgid "Extra waivers file, besides /etc/linaudit/waivers.conf."
+msgstr "Archivo extra de excepciones, además de /etc/linaudit/waivers.conf."
+
+#: crates/linaudit/src/cli.rs
+msgid "Save the report to FILE (mode 600) instead of printing it."
+msgstr "Guardar el reporte en FILE (permisos 600) en vez de imprimirlo."
+
+#: crates/linaudit/src/cli.rs
+msgid "Exit code 1 if the score is lower than N (useful in cron/CI)."
+msgstr "Código de salida 1 si el puntaje es menor que N (útil en cron/CI)."
+
+#: crates/linaudit/src/cli.rs
+msgid "No colors (NO_COLOR is honored too)."
+msgstr "Sin colores (también se respeta NO_COLOR)."
+
+#: crates/linaudit/src/cli.rs
+msgid "Interface language: es or en. By default, the one chosen on the welcome screen or the system locale."
+msgstr "Idioma de la interfaz: es o en. Por defecto, el elegido en la pantalla de bienvenida o el del sistema."
+
+#: crates/linaudit/src/cli.rs
+msgid "Generate shell completions (bash, zsh, fish...) and exit."
+msgstr "Generar autocompletado para una shell (bash, zsh, fish...) y salir."
+
+#: crates/linaudit/src/cli.rs
+msgid "Show this help."
+msgstr "Mostrar esta ayuda."
+
+#: crates/linaudit/src/cli.rs
+msgid "Show the version."
+msgstr "Mostrar la versión."
+
+#: crates/linaudit/src/cli.rs
+msgid "Usage"
+msgstr "Uso"
+
+#: crates/linaudit/src/cli.rs
+msgid "Options"
+msgstr "Opciones"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/cli.rs
+msgid "{path}: invalid profile \"{id}\" (valid: auto, {valid})"
+msgstr "{path}: perfil inválido \"{id}\" (válidos: auto, {valid})"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/lang.rs
+msgid "supported languages: {list}"
+msgstr "idiomas disponibles: {list}"
+
+#: crates/linaudit/src/lang.rs
+msgid "user preferences"
+msgstr "preferencias del usuario"
+
+#: crates/linaudit/src/lang.rs
+msgid "Delete this file to choose the language again."
+msgstr "Borrá este archivo para volver a elegir el idioma."
+
+#: crates/linaudit/src/main.rs
+msgid "only Linux is supported"
+msgstr "solo soporta Linux"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/main.rs
+msgid "unknown category: {bad} (available: {available})"
+msgstr "categoría desconocida: {bad} (disponibles: {available})"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/main.rs
+msgid "menu: {e}"
+msgstr "menú: {e}"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/main.rs
+msgid "waivers file {path} does not exist"
+msgstr "no existe el archivo de excepciones {path}"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/main.rs
+msgid "interface: {e}"
+msgstr "interfaz: {e}"
+
+#: crates/linaudit/src/main.rs
+msgid "linaudit: audit interrupted."
+msgstr "linaudit: análisis interrumpido."
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/main.rs
+msgid "analyzing {category}…"
+msgstr "analizando {category}…"
+
+#: crates/linaudit/src/main.rs crates/linaudit-core/src/system.rs
+msgid "unknown"
+msgstr "desconocido"
+
+#: crates/linaudit/src/main.rs crates/linaudit/src/text.rs
+#: crates/linaudit/src/tui/widgets.rs
+msgid "no data"
+msgstr "sin datos"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/main.rs
+msgid "Report saved to {path} (score {score})"
+msgstr "Reporte guardado en {path} (puntaje {score})"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/main.rs
+msgid "{score}/10 (incomplete evaluation)"
+msgstr "{score}/10 (evaluación incompleta)"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/main.rs
+msgid "linaudit: {score} · {fail} failing · {warn} warnings · profile {profile}"
+msgstr "linaudit: {score} · {fail} fallan · {warn} advertencias · perfil {profile}"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/main.rs
+msgid "text report: linaudit --plain --profile {profile}"
+msgstr "reporte de texto: linaudit --plain --profile {profile}"
+
+#: crates/linaudit/src/main.rs
+msgid "  (detected on this system)"
+msgstr "  (detectado en este sistema)"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/main.rs
+msgid "auto-detect: {reasons}"
+msgstr "autodetectar: {reasons}"
+
+#: crates/linaudit/src/menu.rs crates/linaudit/src/tui/welcome.rs
+msgid "detected"
+msgstr "detectado"
+
+#: crates/linaudit/src/menu.rs crates/linaudit/src/text.rs
+#: crates/linaudit/src/tui/ui.rs
+msgid "chosen"
+msgstr "elegido"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/menu.rs
+msgid "Profile: {profile} ({how}) · to automate: --profile {id}"
+msgstr "Perfil: {profile} ({how}) · para automatizar: --profile {id}"
+
+#: crates/linaudit/src/menu.rs
+msgid "Cancelled."
+msgstr "Cancelado."
+
+#: crates/linaudit/src/menu.rs crates/linaudit/src/tui/welcome.rs
+msgid "What kind of system is this?"
+msgstr "¿Qué tipo de sistema es este?"
+
+#: crates/linaudit/src/menu.rs
+msgid "(detected)"
+msgstr "(detectado)"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/menu.rs
+msgid "Auto-detection: {reasons}"
+msgstr "Autodetección: {reasons}"
+
+#: crates/linaudit/src/menu.rs crates/linaudit/src/tui/welcome.rs
+msgid "choose"
+msgstr "elegir"
+
+#: crates/linaudit/src/menu.rs crates/linaudit/src/tui/welcome.rs
+msgid "confirm"
+msgstr "confirmar"
+
+#: crates/linaudit/src/menu.rs crates/linaudit/src/tui/ui.rs
+#: crates/linaudit/src/tui/welcome.rs
+msgid "quit"
+msgstr "salir"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/menu.rs
+msgid "Tip: for cron or scripts use --profile {id}"
+msgstr "Tip: para cron o scripts usá --profile {id}"
+
+#: crates/linaudit/src/text.rs
+msgid "Well hardened"
+msgstr "Muy bien endurecido"
+
+#: crates/linaudit/src/text.rs
+msgid "Acceptable, with details to fix"
+msgstr "Aceptable, con detalles para corregir"
+
+#: crates/linaudit/src/text.rs
+msgid "Needs work: there are relevant gaps"
+msgstr "Mejorable: hay brechas relevantes"
+
+#: crates/linaudit/src/text.rs
+msgid "Weak: fix soon"
+msgstr "Débil: corregir pronto"
+
+#: crates/linaudit/src/text.rs
+msgid "Critical: act now"
+msgstr "Crítico: intervenir ya"
+
+#: crates/linaudit/src/text.rs
+msgid " (NOT root: some checks cannot run)"
+msgstr " (SIN root: algunos controles no pueden correr)"
+
+#: crates/linaudit/src/text.rs crates/linaudit/src/tui/ui.rs
+msgid "argument"
+msgstr "argumento"
+
+#: crates/linaudit/src/text.rs crates/linaudit/src/tui/ui.rs
+msgid "config"
+msgstr "config"
+
+#: crates/linaudit/src/text.rs
+msgid "auto-detected"
+msgstr "autodetectado"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/text.rs
+msgid "{date} · user: {user}{no_root}"
+msgstr "{date} · usuario: {user}{no_root}"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/text.rs
+msgid "profile: {profile} ({source})"
+msgstr "perfil: {profile} ({source})"
+
+#: crates/linaudit/src/text.rs
+msgid "SCORE:"
+msgstr "PUNTAJE:"
+
+#: crates/linaudit/src/text.rs
+msgid "no check could be evaluated (unknown category, or none applies to this system?)"
+msgstr "ningún control evaluable (¿categoría inexistente o no aplica a este sistema?)"
+
+#: crates/linaudit/src/text.rs
+msgid "INCOMPLETE evaluation"
+msgstr "Evaluación INCOMPLETA"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/text.rs
+msgid "weighted compliance {pct}% · fine score {raw}"
+msgstr "cumplimiento ponderado {pct}% · puntaje fino {raw}"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/text.rs
+msgid "PARTIAL SCORE: only the categories {categories} were evaluated; this is not the system score."
+msgstr "PUNTAJE PARCIAL: solo se evaluaron las categorías {categories}; no es el puntaje del sistema."
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/text.rs
+msgid "Coverage {pct}%: {n} checks could not be evaluated (missing root?). Until they are, the score cannot exceed 6/10."
+msgstr "Cobertura {pct}%: {n} controles no pudieron evaluarse (¿falta root?). Hasta completarlos el puntaje no puede superar 6/10."
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/text.rs
+msgid "Cap applied: {cap}/10 due to open critical/high findings"
+msgstr "Techo aplicado: {cap}/10 por hallazgos críticos/altos abiertos"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/text.rs
+msgid "Open findings:  {red}{critical} critical{rst} · {red}{high} high{rst} · {medium} medium · {low} low"
+msgstr "Hallazgos abiertos:  {red}{critical} críticos{rst} · {red}{high} altos{rst} · {medium} medios · {low} bajos"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/text.rs
+msgid "Checks:  {pass} ok · {fail} failing · {warn} warn · {na} n/a · {error} error · {waived} waived"
+msgstr "Controles:  {pass} ok · {fail} fallan · {warn} warn · {na} n/a · {error} error · {waived} con excepción"
+
+#: crates/linaudit/src/text.rs
+msgid "By category"
+msgstr "Por categoría"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/text.rs
+msgid "{fails} failing out of {checks}"
+msgstr "{fails} fallan de {checks}"
+
+#: crates/linaudit/src/text.rs
+msgid "No open findings."
+msgstr "Sin hallazgos abiertos."
+
+#: crates/linaudit/src/text.rs
+msgid "FINDINGS"
+msgstr "HALLAZGOS"
+
+#: crates/linaudit/src/text.rs
+msgid "(sorted by severity)"
+msgstr "(ordenados por gravedad)"
+
+#: crates/linaudit/src/text.rs
+msgid "fix:"
+msgstr "arreglo:"
+
+#: crates/linaudit/src/text.rs
+msgid "DOCUMENTED WAIVERS (not scored)"
+msgstr "EXCEPCIONES DOCUMENTADAS (no puntúan)"
+
+#: crates/linaudit/src/text.rs
+msgid "COULD NOT BE EVALUATED (count neither as PASS nor as FAIL)"
+msgstr "NO SE PUDIERON EVALUAR (no cuentan como PASS ni como FAIL)"
+
+#: crates/linaudit/src/text.rs
+msgid "PASSED CHECKS"
+msgstr "CONTROLES APROBADOS"
+
+#: crates/linaudit/src/tui/app.rs
+msgid "Summary"
+msgstr "Resumen"
+
+#: crates/linaudit/src/tui/app.rs crates/linaudit/src/tui/ui.rs
+msgid "Findings"
+msgstr "Hallazgos"
+
+#: crates/linaudit/src/tui/app.rs crates/linaudit/src/tui/ui.rs
+msgid "Categories"
+msgstr "Categorías"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/tui/app.rs
+msgid "Fix for {id} copied to the clipboard"
+msgstr "Arreglo de {id} copiado al portapapeles"
+
+#: crates/linaudit/src/tui/app.rs
+msgid "This check has no fix to copy"
+msgstr "Este control no tiene arreglo para copiar"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/tui/mod.rs
+msgid "Language saved in {path}. Delete that file to choose again."
+msgstr "Idioma guardado en {path}. Para volver a elegirlo, borrá ese archivo."
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/tui/mod.rs
+msgid "Could not save the language: {e}"
+msgstr "No se pudo guardar el idioma: {e}"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/tui/ui.rs
+msgid "Terminal too small ({w}×{h}). Minimum {min_w}×{min_h}. q to quit."
+msgstr "Terminal muy chica ({w}×{h}). Mínimo {min_w}×{min_h}. q para salir."
+
+#: crates/linaudit/src/tui/ui.rs crates/linaudit/src/tui/welcome.rs
+msgid "not root"
+msgstr "sin root"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Auditing"
+msgstr "Auditando"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Preparing…"
+msgstr "Preparando…"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/tui/ui.rs
+msgid "Coverage {pct}% · capped at 6/10"
+msgstr "Cobertura {pct}% · tope 6/10"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/tui/ui.rs
+msgid "Capped at {cap}/10 by serious findings"
+msgstr "Techo {cap}/10 por hallazgos graves"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/tui/ui.rs
+msgid "Partial: only {categories}"
+msgstr "Parcial: solo {categories}"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/tui/ui.rs
+msgid "Weighted compliance {pct}%"
+msgstr "Cumplimiento ponderado {pct}%"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Score"
+msgstr "Puntaje"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Incomplete evaluation"
+msgstr "Evaluación incompleta"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "No check could be evaluated"
+msgstr "Ningún control evaluable"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Open by severity"
+msgstr "Abiertos por gravedad"
+
+#: crates/linaudit/src/tui/ui.rs
+msgctxt "severity, short"
+msgid "CRIT"
+msgstr "CRÍT"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Fails"
+msgstr "Falla"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Warning"
+msgstr "Advertencia"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Passes"
+msgstr "Cumple"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Not applicable"
+msgstr "No aplica"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Documented waiver"
+msgstr "Excepción documentada"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Could not be evaluated"
+msgstr "No se pudo evaluar"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Most urgent"
+msgstr "Lo más urgente"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "details"
+msgstr "ver detalle"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "No open findings"
+msgstr "Sin hallazgos abiertos"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Press 2 to see every evaluated check."
+msgstr "Apretá 2 para ver todos los controles evaluados."
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "any severity"
+msgstr "toda gravedad"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/tui/ui.rs
+msgid "only {severity}"
+msgstr "solo {severity}"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "search"
+msgstr "buscar"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "open"
+msgstr "abiertos"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "all"
+msgstr "todos"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "any category"
+msgstr "toda categoría"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/tui/ui.rs
+msgid "{shown} of {total}"
+msgstr "{shown} de {total}"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Open findings"
+msgstr "Hallazgos abiertos"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "All checks"
+msgstr "Todos los controles"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "a shows every check"
+msgstr "a muestra todos los controles"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Nothing matches the filters"
+msgstr "Nada coincide con los filtros"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "x clears them"
+msgstr "x los limpia"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "SEVERITY"
+msgstr "GRAVEDAD"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "CHECK"
+msgstr "CONTROL"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "CATEGORY"
+msgstr "CATEGORÍA"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Details"
+msgstr "Detalle"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Pick a check from the list"
+msgstr "Elegí un control de la lista"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "copy fix"
+msgstr "copiar arreglo"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "WHAT WAS FOUND"
+msgstr "QUÉ SE ENCONTRÓ"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "HOW TO FIX IT"
+msgstr "CÓMO ARREGLARLO"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "COMPLIANCE"
+msgstr "CUMPLIMIENTO"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "FAILING"
+msgstr "FALLAN"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "CHECKS"
+msgstr "CONTROLES"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "see checks"
+msgstr "ver controles"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "NO OPEN FINDINGS"
+msgstr "SIN HALLAZGOS ABIERTOS"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "OPEN FINDINGS"
+msgstr "HALLAZGOS ABIERTOS"
+
+#: crates/linaudit/src/tui/ui.rs
+msgctxt "category chart"
+msgid "pass"
+msgstr "cumplen"
+
+#: crates/linaudit/src/tui/ui.rs
+msgctxt "category chart"
+msgid "fail"
+msgstr "fallan"
+
+#: crates/linaudit/src/tui/ui.rs
+msgctxt "category chart"
+msgid "warn"
+msgstr "advierten"
+
+#: crates/linaudit/src/tui/ui.rs
+msgctxt "category chart"
+msgid "n/a"
+msgstr "no aplican"
+
+#: crates/linaudit/src/tui/ui.rs
+msgctxt "category chart"
+msgid "not evaluated"
+msgstr "sin evaluar"
+
+#: crates/linaudit/src/tui/ui.rs
+msgctxt "category chart"
+msgid "waived"
+msgstr "excepciones"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "accept"
+msgstr "aceptar"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "clear"
+msgstr "borrar"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "delete"
+msgstr "corregir"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "cancel"
+msgstr "cancelar"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "move"
+msgstr "mover"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "tab"
+msgstr "pestaña"
+
+#: crates/linaudit/src/tui/ui.rs
+msgctxt "action"
+msgid "open"
+msgstr "abrir"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "view"
+msgstr "vista"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "severity"
+msgstr "gravedad"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "category"
+msgstr "categoría"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "copy"
+msgstr "copiar"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "clear filters"
+msgstr "limpiar"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "profile"
+msgstr "perfil"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "help"
+msgstr "ayuda"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "General"
+msgstr "General"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "go to Summary / Findings / Categories"
+msgstr "ir a Resumen / Hallazgos / Categorías"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "next / previous tab"
+msgstr "pestaña siguiente / anterior"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "by 10"
+msgstr "de a 10"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "first / last"
+msgstr "primero / último"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "open the selected item"
+msgstr "abrir el elemento elegido"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "change profile and audit again"
+msgstr "cambiar de perfil y volver a auditar"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "open ↔ all checks"
+msgstr "abiertos ↔ todos los controles"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "minimum severity"
+msgstr "gravedad mínima"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "search in ID, title, details and fix"
+msgstr "buscar en ID, título, detalle y arreglo"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "clear the filters"
+msgstr "limpiar filtros"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "copy the fix (OSC 52, works over SSH)"
+msgstr "copiar el arreglo (OSC 52, sirve por SSH)"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Symbols"
+msgstr "Símbolos"
+
+#: crates/linaudit/src/tui/ui.rs
+msgctxt "legend"
+msgid "fails"
+msgstr "falla"
+
+#: crates/linaudit/src/tui/ui.rs
+msgctxt "legend"
+msgid "warning"
+msgstr "advertencia"
+
+#: crates/linaudit/src/tui/ui.rs
+msgctxt "legend"
+msgid "passes"
+msgstr "cumple"
+
+#: crates/linaudit/src/tui/ui.rs
+msgctxt "legend"
+msgid "not applicable"
+msgstr "no aplica"
+
+#: crates/linaudit/src/tui/ui.rs
+msgctxt "legend"
+msgid "waived"
+msgstr "excepción"
+
+#: crates/linaudit/src/tui/ui.rs
+msgctxt "legend"
+msgid "not evaluated"
+msgstr "no evaluado"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Shortcuts"
+msgstr "Atajos"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "any key closes"
+msgstr "cualquier tecla cierra"
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "Without root some checks cannot be evaluated (capped at 6/10). Full audit: sudo linaudit"
+msgstr "Sin root algunos controles no se pueden evaluar (tope 6/10). Análisis completo: sudo linaudit"
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "AGPL v3.0 or later"
+msgstr "AGPL v3.0 o posterior"
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "Read-only security audit for Linux"
+msgstr "Auditoría de seguridad de solo lectura para Linux"
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "Auto-detection:"
+msgstr "Autodetección:"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/tui/welcome.rs
+msgid "To skip this screen (cron, scripts): linaudit --profile {id}"
+msgstr "Para saltear esta pantalla (cron, scripts): linaudit --profile {id}"
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "back"
+msgstr "volver"
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "audit"
+msgstr "auditar"
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "language"
+msgstr "idioma"
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "Choose the language"
+msgstr "Elegí el idioma"
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "preview"
+msgstr "vista previa"
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "Interface, reports and help in this language."
+msgstr "Interfaz, reportes y ayuda en este idioma."
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/tui/welcome.rs
+msgid "You choose this only once: it is saved in {path}."
+msgstr "Se elige una sola vez: queda guardado en {path}."
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "To choose again, delete that file (or use --lang / LINAUDIT_LANG)."
+msgstr "Para volver a elegirlo, borrá ese archivo (o usá --lang / LINAUDIT_LANG)."
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "It cannot be saved (no HOME): use --lang or LINAUDIT_LANG."
+msgstr "No se puede guardar (sin HOME): usá --lang o LINAUDIT_LANG."
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "Developed by"
+msgstr "Desarrollado por"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/tui/welcome.rs
+msgid "License {license}"
+msgstr "Licencia {license}"
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "This system"
+msgstr "Este sistema"
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "Host"
+msgstr "Host"
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "System"
+msgstr "Sistema"
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "Kernel"
+msgstr "Kernel"
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "User"
+msgstr "Usuario"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/tui/welcome.rs
+msgid "{n} categories"
+msgstr "{n} categorías"
+
+#: crates/linaudit/src/tui/welcome.rs
+msgid "No adjustments: original severity."
+msgstr "Sin ajustes: severidad original."
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/tui/welcome.rs
+msgid "Adjusts {adjusted} checks."
+msgstr "Ajusta {adjusted} controles."
+
+#: crates/linaudit/src/tui/widgets.rs
+msgid "out of 10"
+msgstr "de 10"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "root is required to read /etc/sudoers"
+msgstr "se necesita root para leer /etc/sudoers"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Only root has UID 0"
+msgstr "Solo root tiene UID 0"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Other accounts have UID 0"
+msgstr "Hay otras cuentas con UID 0"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Remove the account or give it another UID"
+msgstr "Eliminar la cuenta o asignarle otro UID"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "No account with an empty password"
+msgstr "Ninguna cuenta con password vacío"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Accounts with an empty password"
+msgstr "Cuentas con password vacío"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "passwd -l <account>  (or set a password)"
+msgstr "passwd -l <cuenta>  (o asignar password)"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "cannot read /etc/shadow (not root?)"
+msgstr "no se puede leer /etc/shadow (¿sin root?)"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Passwords in /etc/shadow (not in passwd)"
+msgstr "Passwords en /etc/shadow (no en passwd)"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Hashes inside /etc/passwd"
+msgstr "Hashes dentro de /etc/passwd"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "sudo without NOPASSWD:ALL"
+msgstr "sudo sin NOPASSWD:ALL"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "sudo NOPASSWD:ALL (root without a password)"
+msgstr "sudo NOPASSWD:ALL (root sin password)"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Require a password or limit it to specific commands"
+msgstr "Exigir password o limitar a comandos concretos"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "sudo without scoped NOPASSWD"
+msgstr "sudo sin NOPASSWD acotado"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "sudo NOPASSWD on specific commands (review)"
+msgstr "sudo NOPASSWD sobre comandos puntuales (revisar)"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Check that no command allows escaping to a shell"
+msgstr "Verificar que cada comando no permita escapar a una shell"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "sudo scoped NOPASSWD"
+msgstr "sudo NOPASSWD acotado"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Service accounts without an interactive shell"
+msgstr "Cuentas de servicio sin shell interactiva"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Service accounts with an interactive shell"
+msgstr "Cuentas de servicio con shell interactiva"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "usermod -s /usr/sbin/nologin <account> (unless needed)"
+msgstr "usermod -s /usr/sbin/nologin <cuenta> (salvo que sea necesario)"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Service accounts without authorized_keys"
+msgstr "Cuentas de servicio sin authorized_keys"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Service accounts with authorized_keys"
+msgstr "Cuentas de servicio con authorized_keys"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Confirm it is intentional (backups, rsync, etc.) and restrict it with from=/command="
+msgstr "Confirmar que es intencional (backups, rsync, etc.) y restringir con from=/command="
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "No duplicate UIDs"
+msgstr "Sin UIDs duplicados"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Duplicate UIDs"
+msgstr "UIDs duplicados"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Assign unique UIDs"
+msgstr "Asignar UIDs únicos"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Passwords without a reasonable expiry"
+msgstr "Passwords sin vencimiento razonable"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "not set"
+msgstr "sin definir"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Set PASS_MAX_DAYS <= 365 in /etc/login.defs (may not apply with SSO/IPA: use a waiver)"
+msgstr "Definir PASS_MAX_DAYS <= 365 en /etc/login.defs (en entornos con SSO/IPA puede no aplicar: usar excepción)"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "No minimum password length policy"
+msgstr "Sin política de longitud mínima de password"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "pwquality/minlen not configured"
+msgstr "pwquality/minlen no configurado"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Install libpam-pwquality (or use authselect) and set minlen >= 12"
+msgstr "Instalar libpam-pwquality (o usar authselect) y fijar minlen >= 12"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Minimum password length >= 12"
+msgstr "Longitud mínima de password >= 12"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Minimum password length is low"
+msgstr "Longitud mínima de password baja"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Raise minlen to 12 or more"
+msgstr "Subir minlen a 12 o más"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "No MD5/DES hashes in /etc/shadow"
+msgstr "Sin hashes MD5/DES en /etc/shadow"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Accounts with a weak hash (MD5/DES)"
+msgstr "Cuentas con hash débil (MD5/DES)"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Force a password change with SHA-512/yescrypt"
+msgstr "Forzar cambio de password con algoritmo SHA-512/yescrypt"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Weak hashes in /etc/shadow"
+msgstr "Hashes débiles en /etc/shadow"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "cannot read /etc/shadow"
+msgstr "no se puede leer /etc/shadow"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Strong ENCRYPT_METHOD"
+msgstr "ENCRYPT_METHOD fuerte"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "not set in login.defs (PAM/authselect?)"
+msgstr "no definido en login.defs (¿PAM/authselect?)"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Weak ENCRYPT_METHOD"
+msgstr "ENCRYPT_METHOD débil"
+
+#: crates/linaudit-core/src/checks/accounts.rs
+msgid "Use SHA512 or YESCRYPT in /etc/login.defs"
+msgstr "Usar SHA512 o YESCRYPT en /etc/login.defs"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgctxt "applications"
+msgid "none"
+msgstr "ninguna"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Detected applications: {list}"
+msgstr "Aplicaciones detectadas: {list}"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Tomcat: no AJP connector without a secret"
+msgstr "Tomcat: sin conector AJP sin secreto"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Tomcat: AJP connector without a secret (Ghostcat)"
+msgstr "Tomcat: conector AJP sin secret (Ghostcat)"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Disable AJP or set address=127.0.0.1 and a secret"
+msgstr "Deshabilitar AJP o fijar address=127.0.0.1 y secret"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Tomcat: no default credentials in tomcat-users.xml"
+msgstr "Tomcat: sin credenciales por defecto en tomcat-users.xml"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Tomcat: users with a default/trivial password"
+msgstr "Tomcat: usuarios con password por defecto/trivial"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Change the password or remove the users"
+msgstr "Cambiar la password o eliminar los usuarios"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Tomcat: user passwords are not in plaintext"
+msgstr "Tomcat: passwords de usuarios no están en texto plano"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Tomcat: plaintext passwords in tomcat-users.xml"
+msgstr "Tomcat: passwords en texto plano en tomcat-users.xml"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Use a CredentialHandler with a digest (SHA-256/bcrypt) in the Realm"
+msgstr "Usar CredentialHandler con digest (SHA-256/bcrypt) en el Realm"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Tomcat: no manager/examples/docs deployed"
+msgstr "Tomcat: sin manager/examples/docs desplegados"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Tomcat: admin or example applications deployed"
+msgstr "Tomcat: aplicaciones de administración o ejemplo desplegadas"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Remove examples/docs; restrict manager by IP or remove it in production"
+msgstr "Eliminar examples/docs; restringir manager por IP o quitarlo en producción"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Tomcat does not run as root"
+msgstr "Tomcat no corre como root"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Tomcat runs as root"
+msgstr "Tomcat corre como root"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Run it as an unprivileged service user (port <1024 via proxy/authbind)"
+msgstr "Ejecutarlo con un usuario de servicio sin privilegios (puerto <1024 vía proxy/authbind)"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Redis: no unauthenticated network exposure"
+msgstr "Redis: sin exposición de red sin autenticación"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Redis exposed to the network WITHOUT authentication"
+msgstr "Redis expuesto a la red SIN autenticación"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "bind 127.0.0.1 or requirepass/ACL + firewall; never protected-mode no without a password"
+msgstr "bind 127.0.0.1 o requirepass/ACL + firewall; nunca protected-mode no sin password"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Redis runs as root"
+msgstr "Redis corre como root"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Run it as the 'redis' user"
+msgstr "Ejecutar como usuario 'redis'"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Redis does not run as root"
+msgstr "Redis no corre como root"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "docker.sock writable by everyone (root for any user)"
+msgstr "docker.sock escribible por todos (root para cualquier usuario)"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "mode {mode}"
+msgstr "modo {mode}"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "docker.sock is not world-writable"
+msgstr "docker.sock no es world-writable"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "docker group has no members"
+msgstr "Grupo docker sin miembros"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "docker group members (equivalent to root)"
+msgstr "Miembros del grupo docker (equivalen a root)"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Keep it to a minimum; consider rootless Docker or scoped sudo"
+msgstr "Limitar al mínimo; considerar rootless Docker o sudo acotado"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Containers without privileged/pid=host/docker.sock"
+msgstr "Contenedores sin privileged/pid=host/docker.sock"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Containers with host privileges (privileged, pid=host or docker.sock)"
+msgstr "Contenedores con privilegios de host (privileged, pid=host o docker.sock)"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Remove --privileged and the docker.sock mount unless justified"
+msgstr "Quitar --privileged y el montaje de docker.sock salvo necesidad justificada"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "PostgreSQL: no 'trust' for network connections"
+msgstr "PostgreSQL: sin 'trust' para conexiones de red"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "PostgreSQL: pg_hba.conf allows 'trust' over the network"
+msgstr "PostgreSQL: pg_hba.conf permite 'trust' por red"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Use scram-sha-256"
+msgstr "Usar scram-sha-256"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "PostgreSQL: pg_hba.conf has no rules open to 0.0.0.0/0"
+msgstr "PostgreSQL: pg_hba.conf sin reglas abiertas a 0.0.0.0/0"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "PostgreSQL: rules open to any source (0.0.0.0/0)"
+msgstr "PostgreSQL: reglas abiertas a cualquier origen (0.0.0.0/0)"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Restrict to the application networks"
+msgstr "Restringir a las redes de aplicación"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Samba allows guest access"
+msgstr "Samba permite acceso de invitados"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "guest ok = no; review 'map to guest'"
+msgstr "guest ok = no; revisar 'map to guest'"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Samba without guest access"
+msgstr "Samba sin acceso de invitados"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Apache exposes its version (ServerTokens)"
+msgstr "Apache expone versión (ServerTokens)"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "ServerTokens Prod and ServerSignature Off"
+msgstr "ServerTokens Prod y ServerSignature Off"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Apache: no directory listing (Options Indexes)"
+msgstr "Apache: sin directory listing (Options Indexes)"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Apache: directory listing enabled"
+msgstr "Apache: directory listing habilitado"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "nginx exposes its version (server_tokens)"
+msgstr "nginx expone versión (server_tokens)"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "nginx: no autoindex"
+msgstr "nginx: sin autoindex"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "nginx: autoindex enabled"
+msgstr "nginx: autoindex habilitado"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "{path} mount"
+msgstr "Montaje de {path}"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "not a mount point"
+msgstr "no es un punto de montaje"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "{path} with secure options"
+msgstr "{path} con opciones seguras"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "{path} is not a separate filesystem"
+msgstr "{path} no es un filesystem separado"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Mount {path} separately with: {opts}"
+msgstr "Montar {path} aparte con: {opts}"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "{path} without secure options"
+msgstr "{path} sin opciones seguras"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "missing: {missing} (current options: {current})"
+msgstr "faltan: {missing} (opciones actuales: {current})"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Add {opts} in /etc/fstab (or a systemd mount unit)"
+msgstr "Agregar {opts} en /etc/fstab (o systemd mount unit)"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "/etc/shadow permissions"
+msgstr "Permisos de /etc/shadow"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "/etc/gshadow permissions"
+msgstr "Permisos de /etc/gshadow"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "/etc/passwd permissions"
+msgstr "Permisos de /etc/passwd"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "/etc/group permissions"
+msgstr "Permisos de /etc/group"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "/etc/sudoers permissions"
+msgstr "Permisos de /etc/sudoers"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "No home directory is world-writable"
+msgstr "Ningún home es world-writable"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Home directories writable by everyone"
+msgstr "Directorios home escribibles por todos"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "chmod o-w <home> (ideally 750 or 700)"
+msgstr "chmod o-w <home> (idealmente 750 o 700)"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Home directories with restrictive permissions (<=750)"
+msgstr "Homes con permisos restrictivos (<=750)"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Home directories readable by other users"
+msgstr "Homes legibles por otros usuarios"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "chmod 750 (or 700) on the home directories"
+msgstr "chmod 750 (o 700) en los homes"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Dangerous capabilities on binaries"
+msgstr "Capabilities peligrosas en binarios"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "getcap not installed (libcap2-bin / libcap)"
+msgstr "getcap no instalado (libcap2-bin / libcap)"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "No dangerous capabilities on binaries"
+msgstr "Sin capabilities peligrosas en binarios"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Binaries with dangerous capabilities"
+msgstr "Binarios con capabilities peligrosas"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "setcap -r <binary> unless essential"
+msgstr "setcap -r <binario> si no es imprescindible"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "No SUID/SGID in tmp, home, www"
+msgstr "Sin SUID/SGID en tmp, home, www"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "SUID/SGID in an unusual location"
+msgstr "SUID/SGID en ubicación inusual"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Investigate: a typical persistence/escalation technique"
+msgstr "Investigar: es una técnica típica de persistencia/escalada"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Dangerous SUID (GTFOBins)"
+msgstr "SUID peligrosos (GTFOBins)"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "SUID/SGID not provided by packages"
+msgstr "SUID/SGID no provistos por paquetes"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "World-writable files in system paths"
+msgstr "Archivos world-writable en rutas del sistema"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "World-writable files outside system paths"
+msgstr "Archivos world-writable fuera del sistema"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "World-writable directories without the sticky bit"
+msgstr "Directorios world-writable sin sticky bit"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Files without an owner or group"
+msgstr "Archivos sin dueño o sin grupo"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "skipped by --fast"
+msgstr "omitido por --fast"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "No SUID on dangerous binaries (GTFOBins)"
+msgstr "Sin SUID en binarios peligrosos (GTFOBins)"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "SUID on binaries that allow escalating to root"
+msgstr "SUID en binarios que permiten escalar a root"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "chmod u-s <binary>"
+msgstr "chmod u-s <binario>"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+#: crates/linaudit-core/src/checks/patching.rs
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "unrecognized distro"
+msgstr "distro no reconocida"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "All SUID/SGID files belong to packages ({n} checked)"
+msgstr "Todos los SUID/SGID pertenecen a paquetes ({n} revisados)"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "SUID/SGID files that belong to no package"
+msgstr "SUID/SGID que no pertenecen a ningún paquete"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Verify the origin; if not legitimate: chmod u-s,g-s and investigate"
+msgstr "Verificar origen; si no es legítimo: chmod u-s,g-s y analizar"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "No world-writable files in system paths"
+msgstr "Sin archivos world-writable en rutas del sistema"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "World-writable files in system paths ({n})"
+msgstr "Archivos world-writable en rutas del sistema ({n})"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "chmod o-w <file>"
+msgstr "chmod o-w <archivo>"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "No world-writable files outside system paths"
+msgstr "Sin archivos world-writable fuera del sistema"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "World-writable files ({n})"
+msgstr "Archivos world-writable ({n})"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "World-writable directories have the sticky bit"
+msgstr "Directorios world-writable con sticky bit"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "World-writable directories without the sticky bit ({n})"
+msgstr "Directorios world-writable sin sticky bit ({n})"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "chmod +t <dir>  (or remove o+w)"
+msgstr "chmod +t <dir>  (o quitar o+w)"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "No orphaned files (without owner/group)"
+msgstr "Sin archivos huérfanos (sin dueño/grupo)"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Files without an owner or group ({n})"
+msgstr "Archivos sin dueño o sin grupo ({n})"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Assign a valid owner or delete them"
+msgstr "Asignar dueño válido o eliminar"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "auditd running"
+msgstr "auditd en ejecución"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "auditd has rules loaded"
+msgstr "auditd con reglas cargadas"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "{n} rules"
+msgstr "{n} reglas"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "auditd has no rules loaded"
+msgstr "auditd sin reglas cargadas"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Add rules (e.g. /usr/share/doc/auditd/examples or CIS/STIG) in /etc/audit/rules.d/"
+msgstr "Agregar reglas (ej. /usr/share/doc/auditd/examples o CIS/STIG) en /etc/audit/rules.d/"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "auditd rules"
+msgstr "Reglas de auditd"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "root is required"
+msgstr "se necesita root"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "auditd is not running"
+msgstr "auditd no está en ejecución"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Install and enable auditd (or add a waiver if another audit/EDR agent is in place)"
+msgstr "Instalar y habilitar auditd (o registrar excepción si hay otro agente de auditoría/EDR)"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "auditd inactive"
+msgstr "auditd inactivo"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Time service active but not synchronized"
+msgstr "Servicio de hora activo pero no sincronizado"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Check the configured NTP servers"
+msgstr "Revisar los servidores NTP configurados"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Time synchronization active"
+msgstr "Sincronización horaria activa"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "No time synchronization service"
+msgstr "Sin servicio de sincronización horaria"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Install/enable chrony (accurate time is key for logs and Kerberos)"
+msgstr "Instalar/habilitar chrony (la hora correcta es clave para logs y Kerberos)"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "syslog service active"
+msgstr "Servicio de syslog activo"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Persistent journald active"
+msgstr "journald persistente activo"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "No syslog or persistent journal"
+msgstr "Sin syslog ni journal persistente"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "logs are lost on reboot"
+msgstr "los logs se pierden al reiniciar"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Install rsyslog or create /var/log/journal"
+msgstr "Instalar rsyslog o crear /var/log/journal"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "remote syslog"
+msgstr "syslog remoto"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Logs are not sent to a remote collector"
+msgstr "Sin envío de logs a un colector remoto"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "an attacker with root can wipe the local logs"
+msgstr "un atacante con root puede borrar los logs locales"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Forward to a SIEM/central syslog (rsyslog omfwd, filebeat, etc.)"
+msgstr "Reenviar a un SIEM/syslog central (rsyslog omfwd, filebeat, etc.)"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Logs sent to a remote collector"
+msgstr "Logs enviados a un colector remoto"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Full ASLR"
+msgstr "ASLR completo"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "kptr_restrict enabled"
+msgstr "kptr_restrict activo"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "dmesg restricted"
+msgstr "dmesg restringido"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "No core dumps from setuid processes"
+msgstr "Sin core dumps de procesos setuid"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Hardlink protection"
+msgstr "Protección de hardlinks"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Symlink protection"
+msgstr "Protección de symlinks"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "ptrace restricted (Yama)"
+msgstr "ptrace restringido (Yama)"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "No typically unneeded services active"
+msgstr "Sin servicios típicamente innecesarios activos"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Services rarely needed on a server"
+msgstr "Servicios que rara vez se necesitan en un servidor"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "systemctl disable --now <service> (rpcbind is only needed for NFS/NIS)"
+msgstr "systemctl disable --now <servicio> (rpcbind se necesita solo para NFS/NIS)"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Brute-force protection active"
+msgstr "Protección anti fuerza bruta activa"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "No fail2ban/sshguard/crowdsec"
+msgstr "Sin fail2ban/sshguard/crowdsec"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Install fail2ban (or add a waiver if SSH is behind a bastion/VPN)"
+msgstr "Instalar fail2ban (o registrar excepción si SSH está detrás de bastión/VPN)"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Restrictive default umask"
+msgstr "umask por defecto restrictivo"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Permissive default umask"
+msgstr "umask por defecto permisivo"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "UMASK 027 in /etc/login.defs"
+msgstr "UMASK 027 en /etc/login.defs"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Local banners without system details"
+msgstr "Banners locales sin datos del sistema"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Local banners expose version/kernel"
+msgstr "Banners locales exponen versión/kernel"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Replace with a legal banner without the \\r \\m \\s \\v escapes"
+msgstr "Reemplazar por un banner legal sin escapes \\r \\m \\s \\v"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "SELinux in Enforcing mode"
+msgstr "SELinux en modo Enforcing"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "SELinux in Permissive mode (log only)"
+msgstr "SELinux en modo Permissive (solo registra)"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "setenforce 1 and set SELINUX=enforcing in /etc/selinux/config"
+msgstr "setenforce 1 y fijar SELINUX=enforcing en /etc/selinux/config"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "SELinux disabled"
+msgstr "SELinux deshabilitado"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Enable SELinux (requires a relabel and reboot)"
+msgstr "Habilitar SELinux (requiere relabel y reinicio)"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "AppArmor enabled"
+msgstr "AppArmor habilitado"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "cannot read the profile list (root is required)"
+msgstr "no se puede leer la lista de perfiles (se necesita root)"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "AppArmor active"
+msgstr "AppArmor activo"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "{n} profiles loaded"
+msgstr "{n} perfiles cargados"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "AppArmor enabled but no profiles loaded"
+msgstr "AppArmor habilitado pero sin perfiles cargados"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Install/enable apparmor-profiles and apparmor.service"
+msgstr "Instalar/activar apparmor-profiles y apparmor.service"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "No MAC active (neither SELinux nor AppArmor)"
+msgstr "Sin MAC activo (ni SELinux ni AppArmor)"
+
+#: crates/linaudit-core/src/checks/hardening.rs
+msgid "Enable AppArmor (Debian/Ubuntu) or SELinux (RHEL)"
+msgstr "Habilitar AppArmor (Debian/Ubuntu) o SELinux (RHEL)"
+
+#: crates/linaudit-core/src/checks/mod.rs
+msgid "Accounts, passwords and sudo"
+msgstr "Cuentas, passwords y sudo"
+
+#: crates/linaudit-core/src/checks/mod.rs
+msgid "Effective OpenSSH configuration"
+msgstr "Configuración efectiva de OpenSSH"
+
+#: crates/linaudit-core/src/checks/mod.rs
+msgid "Critical permissions, SUID/SGID, world-writable files and mounts"
+msgstr "Permisos críticos, SUID/SGID, world-writable y montajes"
+
+#: crates/linaudit-core/src/checks/mod.rs
+msgid "Plaintext credentials, private keys and histories"
+msgstr "Credenciales en texto plano, claves privadas e historiales"
+
+#: crates/linaudit-core/src/checks/mod.rs
+msgid "Firewall, exposed ports and network parameters"
+msgstr "Firewall, puertos expuestos y parámetros de red"
+
+#: crates/linaudit-core/src/checks/mod.rs
+msgid "Updates, pending reboot, end of support and repositories"
+msgstr "Actualizaciones, reinicio pendiente, fin de soporte y repositorios"
+
+#: crates/linaudit-core/src/checks/mod.rs
+msgid "Indicators of compromise and persistence mechanisms"
+msgstr "Indicadores de compromiso y mecanismos de persistencia"
+
+#: crates/linaudit-core/src/checks/mod.rs
+msgid "MAC, auditing, time, logs, kernel parameters and services"
+msgstr "MAC, auditoría, hora, logs, parámetros de kernel y servicios"
+
+#: crates/linaudit-core/src/checks/mod.rs
+msgid "Tomcat, Redis, Docker, PostgreSQL, Samba, Apache and nginx"
+msgstr "Tomcat, Redis, Docker, PostgreSQL, Samba, Apache y nginx"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/mod.rs
+msgid "The {category} module ended with an error"
+msgstr "El módulo {category} terminó con error"
+
+#: crates/linaudit-core/src/checks/mod.rs
+msgid "run with LINAUDIT_DEBUG=1 to see the details"
+msgstr "correr con LINAUDIT_DEBUG=1 para ver el detalle"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "No insecure cleartext services exposed (telnet/ftp/rsh/tftp/vnc)"
+msgstr "Sin servicios inseguros en claro expuestos (telnet/ftp/rsh/tftp/vnc)"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Insecure services listening on the network"
+msgstr "Servicios inseguros en escucha en la red"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Disable the service or replace it (SSH/SFTP)"
+msgstr "Deshabilitar el servicio o reemplazarlo (SSH/SFTP)"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Docker API without TLS not exposed"
+msgstr "API de Docker sin TLS no expuesta"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Docker API (2375) exposed without TLS: equivalent to remote root"
+msgstr "API de Docker (2375) expuesta sin TLS: equivale a root remoto"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Remove the tcp:// listener or use TLS with client certificates (2376)"
+msgstr "Quitar el listener tcp:// o usar TLS con certificados de cliente (2376)"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Databases/queues only on loopback"
+msgstr "Bases de datos/colas solo en loopback"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Databases or queues listening on network interfaces"
+msgstr "Bases de datos o colas escuchando en interfaces de red"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Confirm authentication + firewall (or bind to 127.0.0.1); if intentional, add a waiver"
+msgstr "Confirmar autenticación + firewall (o bind a 127.0.0.1); si es intencional, registrar una excepción"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Network surface: {n} sockets listening outside loopback"
+msgstr "Superficie de red: {n} sockets en escucha fuera de loopback"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Local firewall active"
+msgstr "Firewall local activo"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "root is required to inspect iptables/nft"
+msgstr "se necesita root para inspeccionar iptables/nft"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "No active local firewall detected"
+msgstr "No se detectó firewall local activo"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "no DROP/REJECT rules in iptables/nft/ufw/firewalld"
+msgstr "sin reglas DROP/REJECT en iptables/nft/ufw/firewalld"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Enable firewalld/ufw/nftables with a restrictive default policy (or a waiver if there is a dedicated perimeter firewall)"
+msgstr "Activar firewalld/ufw/nftables con política por defecto restrictiva (o excepción si hay firewall perimetral dedicado)"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Restrictive default policy"
+msgstr "Política por defecto restrictiva"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "no firewall detected"
+msgstr "no hay firewall detectado"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Firewall with a restrictive default policy"
+msgstr "Firewall con política por defecto restrictiva"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Firewall without a restrictive default policy"
+msgstr "Firewall sin política por defecto restrictiva"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "INPUT DROP/deny policy, allowing only what is needed"
+msgstr "Política INPUT DROP/deny y permitir solo lo necesario"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Listening ports"
+msgstr "Puertos en escucha"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "ss unavailable"
+msgstr "ss no disponible"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "IP forwarding enabled on a host that is not a router"
+msgstr "Reenvío IP habilitado en un host que no es router"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "ip_forward disabled"
+msgstr "ip_forward deshabilitado"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "enabled, but a container/virtualization runtime is active"
+msgstr "habilitado, pero hay runtime de contenedores/virtualización activo"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Rejects ICMP redirects"
+msgstr "Rechaza ICMP redirects"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Does not send ICMP redirects"
+msgstr "No envía ICMP redirects"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Rejects source routing"
+msgstr "Rechaza source routing"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Reverse path filtering enabled"
+msgstr "Reverse path filtering activo"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "SYN cookies enabled"
+msgstr "SYN cookies activas"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Ignores broadcast ICMP echo"
+msgstr "Ignora ICMP echo a broadcast"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Logs martian packets"
+msgstr "Registra paquetes marcianos"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "NFS exports without no_root_squash or wildcards"
+msgstr "Exports NFS sin no_root_squash ni comodines"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Risky NFS exports (no_root_squash or open to *)"
+msgstr "Exports NFS riesgosos (no_root_squash o abiertos a *)"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Restrict clients and use root_squash"
+msgstr "Restringir clientes y usar root_squash"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "NFS exports"
+msgstr "Exports NFS"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "no /etc/exports"
+msgstr "sin /etc/exports"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "SNMP with a default community (public/private)"
+msgstr "SNMP con community por defecto (public/private)"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "Use SNMPv3 or a non-trivial community with a source ACL"
+msgstr "Usar SNMPv3 o una community no trivial con ACL de origen"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "SNMP without default communities"
+msgstr "SNMP sin communities por defecto"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "snmpd not configured"
+msgstr "snmpd no configurado"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "No r-commands trust (hosts.equiv / .rhosts)"
+msgstr "Sin confianza r-commands (hosts.equiv / .rhosts)"
+
+#: crates/linaudit-core/src/checks/network.rs
+msgid "r-commands trust files present"
+msgstr "Existen archivos de confianza r-commands"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Package index is recent"
+msgstr "Índice de paquetes reciente"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "does not apply to dnf/yum (per-repo cache)"
+msgstr "no aplica a dnf/yum (usa caché por repo)"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Pending security updates"
+msgstr "Actualizaciones de seguridad pendientes"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "apt-get unavailable"
+msgstr "apt-get no disponible"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "apt-get -s failed: {e}"
+msgstr "apt-get -s falló: {e}"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "No pending security updates (per the local index)"
+msgstr "Sin actualizaciones de seguridad pendientes (según el índice local)"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "{n} pending security updates"
+msgstr "{n} actualizaciones de seguridad pendientes"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "could not be determined"
+msgstr "no se pudo determinar"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Package index updated {d} days ago"
+msgstr "Índice de paquetes actualizado hace {d} días"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Package index is old ({d} days): PAT-001 may underestimate pending updates"
+msgstr "Índice de paquetes viejo ({d} días): PAT-001 puede subestimar los pendientes"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "apt update (or check the internal repo / apt-daily.timer)"
+msgstr "apt update (o revisar el repo interno / apt-daily.timer)"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "dnf/yum unavailable"
+msgstr "dnf/yum no disponible"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "no metadata cache for {pm} (run: {pm} makecache)"
+msgstr "sin caché de metadatos para {pm} (correr: {pm} makecache)"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "{n} critical/important errata pending ({total} security in total)"
+msgstr "{n} errata críticas/importantes pendientes ({total} de seguridad en total)"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "{n} security errata pending"
+msgstr "{n} errata de seguridad pendientes"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "No security errata pending (per the local cache)"
+msgstr "Sin errata de seguridad pendientes (según la caché local)"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Automatic security updates enabled"
+msgstr "Actualizaciones automáticas de seguridad activas"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "No automatic security updates"
+msgstr "Sin actualizaciones automáticas de seguridad"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "unattended-upgrades not active"
+msgstr "unattended-upgrades no activo"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Enable it, or add a waiver if patching is managed centrally (Satellite/Ansible/etc.)"
+msgstr "Habilitarlo, o registrar excepción si el parcheo es gestionado centralmente (Satellite/Ansible/etc.)"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Automatic update mechanism enabled"
+msgstr "Mecanismo de actualización automática habilitado"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "No automatic updates"
+msgstr "Sin actualizaciones automáticas"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "dnf-automatic/yum-cron not enabled"
+msgstr "dnf-automatic/yum-cron no habilitado"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Enable it or add a waiver if patching is centralized"
+msgstr "Habilitarlo o registrar excepción si el parcheo es centralizado"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Automatic updates"
+msgstr "Actualizaciones automáticas"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Reboot pending after updates"
+msgstr "Reinicio pendiente por actualizaciones"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Schedule a reboot"
+msgstr "Programar reinicio"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "No reboot pending"
+msgstr "Sin reinicio pendiente"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Running vs installed kernel"
+msgstr "Kernel en ejecución vs instalado"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Running the newest installed kernel"
+msgstr "Corre el kernel más reciente instalado"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Running a kernel other than the newest installed"
+msgstr "Corre un kernel distinto al más nuevo instalado"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "running {running}, installed {l}"
+msgstr "corriendo {running}, instalado {l}"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Reboot pending"
+msgstr "Reinicio pendiente"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "internal table (verify)"
+msgstr "tabla interna (verificar)"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Operating system within support"
+msgstr "Sistema operativo dentro de soporte"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "no end-of-support date for {pretty}"
+msgstr "sin fecha de fin de soporte para {pretty}"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "source: {src}"
+msgstr "fuente: {src}"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "{pretty} has been out of support since {eol}"
+msgstr "{pretty} está fuera de soporte desde {eol}"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Migrate to a supported release (or buy extended support and add a waiver)"
+msgstr "Migrar a una versión soportada (o contratar soporte extendido y registrar excepción)"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "{pretty} support ends on {eol} (less than 180 days)"
+msgstr "{pretty} termina soporte el {eol} (menos de 180 días)"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Plan the migration"
+msgstr "Planificar la migración"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "{pretty} supported until {eol}"
+msgstr "{pretty} dentro de soporte hasta {eol}"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Repositories with signature verification"
+msgstr "Repositorios con verificación de firma"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Repositories without signature verification (trusted=yes / gpgcheck=0)"
+msgstr "Repositorios sin verificación de firma (trusted=yes / gpgcheck=0)"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Enable verification and import the repo key"
+msgstr "Habilitar la verificación e importar la clave del repo"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgctxt "package sources"
+msgid "none"
+msgstr "ninguno"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Non-standard package sources: {r}"
+msgstr "Orígenes de paquetes no estándar: {r}"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "/etc/ld.so.preload exists and is not empty"
+msgstr "/etc/ld.so.preload existe y no está vacío"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Check every listed library: a typical rootkit technique"
+msgstr "Verificar cada biblioteca listada: es una técnica típica de rootkit"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "/etc/ld.so.preload missing or empty"
+msgstr "/etc/ld.so.preload ausente o vacío"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "No persistent LD_PRELOAD"
+msgstr "Sin LD_PRELOAD persistente"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "LD_PRELOAD set in persistent configuration"
+msgstr "LD_PRELOAD definido en configuración persistente"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Check that it is legitimate (some monitoring agents use it)"
+msgstr "Verificar que sea legítimo (algunos agentes de monitoreo lo usan)"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Cron without reverse shell/download-and-execute patterns"
+msgstr "Cron sin patrones de reverse shell/descarga-y-ejecución"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Cron with suspicious patterns"
+msgstr "Cron con patrones sospechosos"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Review those entries: remote execution or reverse shells"
+msgstr "Revisar esas entradas: ejecución remota o shells inversas"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "root is required to read /var/spool/cron"
+msgstr "se necesita root para leer /var/spool/cron"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Cron permissions are correct"
+msgstr "Permisos de cron correctos"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Incorrect cron permissions"
+msgstr "Permisos incorrectos en cron"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "chown root:root and chmod go-w"
+msgstr "chown root:root y chmod go-w"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "systemd units without executables in /tmp, /dev/shm or hidden paths"
+msgstr "Units de systemd sin ejecutables en /tmp, /dev/shm ni ocultos"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "systemd units executing from unusual locations"
+msgstr "Units de systemd ejecutando desde ubicaciones inusuales"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Verify (running from /home or /tmp is a persistence technique)"
+msgstr "Verificar (ejecutar desde /home o /tmp es una técnica de persistencia)"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "root's authorized SSH keys"
+msgstr "Claves SSH autorizadas de root"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "root is required to read /root"
+msgstr "se necesita root para leer /root"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "root has {n} authorized SSH keys without restrictions (from=/command=)"
+msgstr "root tiene {n} claves SSH autorizadas sin restricciones (from=/command=)"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Restrict with from=/command= or remove root key access"
+msgstr "Restringir con from=/command= o eliminar el acceso de root por clave"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "root's keys have restrictions"
+msgstr "Las claves de root tienen restricciones"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "root has no authorized_keys"
+msgstr "root sin authorized_keys"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Login scripts without suspicious patterns"
+msgstr "Scripts de login sin patrones sospechosos"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Login scripts with suspicious patterns"
+msgstr "Scripts de login con patrones sospechosos"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Review: they run on every user session"
+msgstr "Revisar: se ejecutan en cada sesión del usuario"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "PAM without 'auth sufficient pam_permit.so'"
+msgstr "PAM sin 'auth sufficient pam_permit.so'"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "PAM accepts any authentication (auth sufficient pam_permit.so)"
+msgstr "PAM acepta cualquier autenticación (auth sufficient pam_permit.so)"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Remove that line: it allows logging in without a password"
+msgstr "Quitar esa línea: permite entrar sin password"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "PAM without pam_exec"
+msgstr "PAM sin pam_exec"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "PAM runs external scripts (pam_exec)"
+msgstr "PAM ejecuta scripts externos (pam_exec)"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Check that the script is legitimate and not writable by others"
+msgstr "Verificar que el script sea legítimo y no modificable por otros"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "rc.local has no commands"
+msgstr "rc.local sin comandos"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "/etc/rc.local runs commands at boot"
+msgstr "/etc/rc.local ejecuta comandos al arranque"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Migrate to a documented systemd unit"
+msgstr "Migrar a una unit de systemd documentada"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Out-of-tree kernel modules"
+msgstr "Módulos de kernel externos"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "no /proc/sys/kernel/tainted"
+msgstr "sin /proc/sys/kernel/tainted"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Out-of-tree or unsigned kernel modules loaded"
+msgstr "Módulos de kernel externos o sin firmar cargados"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Review with lsmod/modinfo (they may be legitimate: ZFS, NVIDIA, VirtualBox)"
+msgstr "Revisar con lsmod/modinfo (pueden ser legítimos: ZFS, NVIDIA, VirtualBox)"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "No out-of-tree or unsigned kernel modules"
+msgstr "Sin módulos de kernel externos ni sin firmar"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Binary integrity against the package database"
+msgstr "Integridad de binarios contra la base de paquetes"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Binary integrity"
+msgstr "Integridad de binarios"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "{cmd} unavailable"
+msgstr "{cmd} no disponible"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "System binaries match their packages ({shown})"
+msgstr "Binarios de sistema coinciden con los paquetes ({shown})"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "System binaries modified from their package ({n})"
+msgstr "Binarios de sistema modificados respecto del paquete ({n})"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Reinstall the package and investigate the host: it may be compromised"
+msgstr "Reinstalar el paquete y analizar el host: puede estar comprometido"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Processes from unusual locations"
+msgstr "Procesos desde ubicaciones inusuales"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "root is required to read /proc/*/exe"
+msgstr "se necesita root para leer /proc/*/exe"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Processes from anonymous memory"
+msgstr "Procesos desde memoria anónima"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Processes with a replaced binary"
+msgstr "Procesos con binario reemplazado"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "No process runs from anonymous memory (memfd)"
+msgstr "Ningún proceso corre desde memoria anónima (memfd)"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Processes running from anonymous memory (memfd, no file on disk)"
+msgstr "Procesos ejecutándose desde memoria anónima (memfd, sin archivo en disco)"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Typical of fileless malware, though some legitimate agents use it: identify the process (ls -l /proc/<pid>/exe)"
+msgstr "Típico de malware sin archivo, aunque algunos agentes legítimos lo usan: identificar el proceso (ls -l /proc/<pid>/exe)"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "No process runs from /tmp, /dev/shm or memfd"
+msgstr "Ningún proceso corre desde /tmp, /dev/shm ni memfd"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Processes running from /tmp, /dev/shm or anonymous memory"
+msgstr "Procesos ejecutándose desde /tmp, /dev/shm o memoria anónima"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Investigate immediately (ls -l /proc/<pid>/exe, /proc/<pid>/cmdline)"
+msgstr "Investigar de inmediato (ls -l /proc/<pid>/exe, /proc/<pid>/cmdline)"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "No process runs with a deleted/replaced binary"
+msgstr "Ningún proceso corre con binario borrado/reemplazado"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Processes whose binary was replaced on disk (restarts missing after updates)"
+msgstr "Procesos con binario reemplazado en disco (faltan reinicios tras actualizar)"
+
+#: crates/linaudit-core/src/checks/persistence.rs
+msgid "Restart those services (needrestart / needs-restarting -s)"
+msgstr "Reiniciar esos servicios (needrestart / needs-restarting -s)"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "root is required to read /root, /home and /etc"
+msgstr "se necesita root para leer /root, /home y /etc"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Credential search"
+msgstr "Búsqueda de credenciales"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "No obvious plaintext credentials"
+msgstr "Sin credenciales evidentes en texto plano"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "No credentials in world-readable files"
+msgstr "Sin credenciales en archivos legibles por todos"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Possible plaintext credentials ({n} files)"
+msgstr "Posibles credenciales en texto plano ({n} archivos)"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Move them to a secrets manager / EnvironmentFile with mode 600 (check for false positives)"
+msgstr "Moverlas a un gestor de secretos / EnvironmentFile con modo 600 (revisar falsos positivos)"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Files with possible credentials are not world-readable"
+msgstr "Archivos con posibles credenciales no son legibles por todos"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Possible credentials in files readable by ALL users"
+msgstr "Posibles credenciales en archivos legibles por TODOS los usuarios"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "chmod o-rwx <file> and rotate the credential if it is real"
+msgstr "chmod o-rwx <archivo> y rotar la credencial si es real"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "No credentials embedded in URLs"
+msgstr "Sin credenciales embebidas en URLs"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Credentials embedded in URLs ({n} files)"
+msgstr "Credenciales embebidas en URLs ({n} archivos)"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Use a credential helper / deploy keys / environment variables"
+msgstr "Usar credential helper / deploy keys / variables de entorno"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Shell histories without obvious credentials"
+msgstr "Historiales de shell sin credenciales evidentes"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Credentials in shell histories"
+msgstr "Credenciales en historiales de shell"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Rotate those credentials; HISTCONTROL=ignorespace and do not pass passwords on the command line"
+msgstr "Rotar esas credenciales; HISTCONTROL=ignorespace y no pasar passwords por línea de comandos"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "No obvious credentials in systemd units or cron"
+msgstr "Sin credenciales evidentes en units de systemd ni cron"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Possible credentials in systemd units or cron"
+msgstr "Posibles credenciales en units de systemd o cron"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Use EnvironmentFile= (mode 600) or LoadCredential="
+msgstr "Usar EnvironmentFile= (modo 600) o LoadCredential="
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Private keys not world-readable ({real} found)"
+msgstr "Claves privadas no legibles por todos ({real} halladas)"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Private keys readable by ALL users"
+msgstr "Claves privadas legibles por TODOS los usuarios"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "chmod 600 <key> and treat the key as compromised (rotate it)"
+msgstr "chmod 600 <clave> y considerar la clave comprometida (rotar)"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "SSH keys without a passphrase"
+msgstr "Claves SSH sin passphrase"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "ssh-keygen not installed"
+msgstr "ssh-keygen no instalado"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Users' SSH keys have a passphrase"
+msgstr "Claves SSH de usuarios con passphrase"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Private SSH keys without a passphrase"
+msgstr "Claves SSH privadas sin passphrase"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "ssh-keygen -p -f <key> (or use ssh-agent/certificates; restrict service accounts with from=/command=)"
+msgstr "ssh-keygen -p -f <clave> (o usar ssh-agent/certificados; en cuentas de servicio restringir con from=/command=)"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Credential files with mode 600"
+msgstr "Archivos de credenciales con modo 600"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "Credential files with broad permissions"
+msgstr "Archivos de credenciales con permisos amplios"
+
+#: crates/linaudit-core/src/checks/secrets.rs
+msgid "chmod 600 <file>"
+msgstr "chmod 600 <archivo>"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "OpenSSH server"
+msgstr "Servidor OpenSSH"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "sshd is not installed"
+msgstr "sshd no está instalado"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "sshd configuration"
+msgstr "Configuración de sshd"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "could not read or evaluate the configuration (not root?)"
+msgstr "no se pudo leer ni evaluar la configuración (¿sin root?)"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid " (static config, no defaults: sshd -T unavailable)"
+msgstr " (config estática, sin defaults: sshd -T no disponible)"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Direct root login disabled"
+msgstr "Login directo de root deshabilitado"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Root can log in over SSH with a key only"
+msgstr "Root puede entrar por SSH solo con clave"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "PermitRootLogin no and use sudo"
+msgstr "PermitRootLogin no y usar sudo"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Root can log in over SSH with a password"
+msgstr "Root puede entrar por SSH con password"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Password authentication disabled"
+msgstr "Autenticación por password deshabilitada"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "SSH accepts password authentication"
+msgstr "SSH acepta autenticación por password"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Use keys (or a waiver if there is SSO/IPA)"
+msgstr "Usar claves (o excepción si hay SSO/IPA)"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "PermitEmptyPasswords disabled"
+msgstr "PermitEmptyPasswords deshabilitado"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "SSH allows empty passwords"
+msgstr "SSH permite passwords vacíos"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "MaxAuthTries is reasonable"
+msgstr "MaxAuthTries razonable"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "MaxAuthTries is high"
+msgstr "MaxAuthTries alto"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "X11Forwarding disabled"
+msgstr "X11Forwarding deshabilitado"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "X11Forwarding enabled"
+msgstr "X11Forwarding habilitado"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Weak cryptographic algorithms"
+msgstr "Algoritmos criptográficos débiles"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "requires sshd -T"
+msgstr "requiere sshd -T"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "No weak cryptographic algorithms"
+msgstr "Sin algoritmos criptográficos débiles"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Weak SSH algorithms enabled"
+msgstr "Algoritmos SSH débiles habilitados"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Set explicit Ciphers/MACs/KexAlgorithms (e.g. crypto-policies on RHEL)"
+msgstr "Definir Ciphers/MACs/KexAlgorithms explícitos (ej. crypto-policies en RHEL)"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "LoginGraceTime is high"
+msgstr "LoginGraceTime alto"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Idle session timeout"
+msgstr "Timeout de sesiones inactivas"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "No timeout for idle SSH sessions"
+msgstr "Sin timeout de sesiones SSH inactivas"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "ClientAliveInterval 300 / ClientAliveCountMax 0 (or TMOUT)"
+msgstr "ClientAliveInterval 300 / ClientAliveCountMax 0 (o TMOUT)"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "GatewayPorts disabled"
+msgstr "GatewayPorts deshabilitado"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "GatewayPorts enabled"
+msgstr "GatewayPorts habilitado"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Legal banner configured"
+msgstr "Banner legal configurado"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "No legal banner on SSH"
+msgstr "Sin banner legal en SSH"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Set Banner /etc/issue.net"
+msgstr "Configurar Banner /etc/issue.net"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "HostbasedAuthentication disabled"
+msgstr "HostbasedAuthentication deshabilitado"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "HostbasedAuthentication enabled"
+msgstr "HostbasedAuthentication habilitado"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "PermitUserEnvironment disabled"
+msgstr "PermitUserEnvironment deshabilitado"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "PermitUserEnvironment enabled"
+msgstr "PermitUserEnvironment habilitado"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "No Match block re-enables root/empty passwords"
+msgstr "Ningún bloque Match reabre root/passwords vacíos"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Match block weakens security"
+msgstr "Bloque Match que debilita la seguridad"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Review the Match blocks"
+msgstr "Revisar los bloques Match"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "sshd_config permissions"
+msgstr "Permisos de sshd_config"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Host private keys have correct permissions"
+msgstr "Claves privadas de host con permisos correctos"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Host private keys readable by others"
+msgstr "Claves privadas de host legibles por otros"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "DSA host key present (obsolete)"
+msgstr "Existe clave de host DSA (obsoleta)"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Remove it and drop the DSA HostKey"
+msgstr "Eliminarla y quitar HostKey DSA"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "No DSA host key"
+msgstr "Sin clave de host DSA"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/util.rs
+msgid "{file} does not exist"
+msgstr "no existe {file}"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/util.rs
+msgid "could not read {file}"
+msgstr "no se pudo leer {file}"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/util.rs
+msgid "mode {mode} (expected at most {max})"
+msgstr "modo {mode} (máximo esperado {max})"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/util.rs
+msgid "owner {owner} (expected {expected})"
+msgstr "dueño {owner} (esperado {expected})"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/util.rs
+msgid "{key} unavailable"
+msgstr "{key} no disponible"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/util.rs
+msgid "{key} = {v} (expected: {expected})"
+msgstr "{key} = {v} (esperado: {expected})"
+
+#: crates/linaudit-core/src/checks/util.rs
+msgid " or "
+msgstr " o "
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/util.rs
+msgid "sysctl -w {key}=<value> and persist it in /etc/sysctl.d/"
+msgstr "sysctl -w {key}=<valor> y persistir en /etc/sysctl.d/"
+
+#: crates/linaudit-core/src/model.rs
+msgctxt "severity"
+msgid "CRITICAL"
+msgstr "CRÍTICO"
+
+#: crates/linaudit-core/src/model.rs
+msgctxt "severity"
+msgid "HIGH"
+msgstr "ALTO"
+
+#: crates/linaudit-core/src/model.rs
+msgctxt "severity"
+msgid "MEDIUM"
+msgstr "MEDIO"
+
+#: crates/linaudit-core/src/model.rs
+msgctxt "severity"
+msgid "LOW"
+msgstr "BAJO"
+
+#: crates/linaudit-core/src/model.rs
+msgctxt "severity"
+msgid "INFO"
+msgstr "INFO"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "Server"
+msgstr "Servidor"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "Desktop / laptop"
+msgstr "Escritorio / notebook"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "Container / ephemeral VM"
+msgstr "Contenedor / VM efímera"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "Full criteria: every check with its original severity."
+msgstr "Criterio completo: todos los controles con su severidad original."
+
+#: crates/linaudit-core/src/profile.rs
+msgid "Personal machine: relaxes checks meant for corporate servers (legal banner, password expiry, log forwarding, fail2ban, services such as cups or avahi) and lowers the firewall from HIGH to MEDIUM."
+msgstr "Equipo personal: relaja controles pensados para servidores corporativos (banner legal, vencimiento de passwords, envío de logs, fail2ban, servicios como cups o avahi) y baja el firewall de ALTO a MEDIO."
+
+#: crates/linaudit-core/src/profile.rs
+msgid "What the host or the runtime manages (clock, AppArmor, auditd, firewall, logs, kernel parameters) is N/A."
+msgstr "Lo que gestiona el host o el runtime (reloj, AppArmor, auditd, firewall, logs, parámetros de kernel) queda N/A."
+
+#: crates/linaudit-core/src/profile.rs
+msgid "Full criteria, no concessions. For servers, VPSs and exposed machines."
+msgstr "Criterio completo, sin concesiones. Para servidores, VPS y máquinas expuestas."
+
+#: crates/linaudit-core/src/profile.rs
+msgid "Relaxes what only matters on corporate servers: banner, password expiry, SIEM, cups/avahi."
+msgstr "Relaja lo que solo importa en servidores corporativos: banner, vencimiento de passwords, SIEM, cups/avahi."
+
+#: crates/linaudit-core/src/profile.rs
+msgid "What the host or the runtime manages (kernel, clock, firewall, logs) is not evaluated."
+msgstr "Lo que gestiona el host o el runtime (kernel, reloj, firewall, logs) no se evalúa."
+
+#: crates/linaudit-core/src/profile.rs
+msgid "a legal banner is a requirement for corporate servers"
+msgstr "el banner legal es un requisito de servidores corporativos"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "periodic password expiry does not apply to personal machines"
+msgstr "el vencimiento periódico de passwords no aplica a equipos personales"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "a personal machine does not usually forward logs to a SIEM"
+msgstr "un equipo personal no suele enviar logs a un SIEM"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "cups, avahi, bluetooth and ModemManager are normal on a desktop"
+msgstr "cups, avahi, bluetooth y ModemManager son normales en un escritorio"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "fail2ban protects exposed services; it does not apply to a desktop"
+msgstr "fail2ban protege servicios expuestos; no aplica a un escritorio"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "the firewall is enforced by the host or the orchestrator"
+msgstr "el firewall lo aplica el host o el orquestador"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "AppArmor/SELinux is enforced by the host"
+msgstr "AppArmor/SELinux lo aplica el host"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "auditd runs on the host"
+msgstr "auditd corre en el host"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "the clock is synchronized by the host"
+msgstr "el reloj lo sincroniza el host"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "logs are collected by the container runtime"
+msgstr "los logs los recolecta el runtime de contenedores"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "a container is not rebooted: the image is rebuilt"
+msgstr "un contenedor no se reinicia: se reconstruye la imagen"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "host kernel parameter"
+msgstr "parámetro del kernel del host"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/profile.rs
+msgid "profile {profile}: {why}"
+msgstr "perfil {profile}: {why}"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/profile.rs
+msgid "profile {profile}: severity {from} → {to}"
+msgstr "perfil {profile}: severidad {from} → {to}"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/profile.rs
+msgid "container detected ({c})"
+msgstr "contenedor detectado ({c})"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/profile.rs
+msgid "graphical environment ({g})"
+msgstr "entorno gráfico ({g})"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "has a battery"
+msgstr "tiene batería"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "no graphical environment"
+msgstr "sin entorno gráfico"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "sshd running"
+msgstr "sshd activo"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "display manager enabled"
+msgstr "display manager habilitado"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "boots into graphical.target"
+msgstr "arranca en graphical.target"
+
+#: crates/linaudit-core/src/profile.rs
+msgid "graphical sessions installed"
+msgstr "sesiones gráficas instaladas"
+
+#: crates/linaudit-core/src/waivers.rs
+msgid "no documented reason"
+msgstr "sin motivo documentado"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/waivers.rs
+msgid "waiver: {reason}"
+msgstr "excepción: {reason}"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/waivers.rs
+msgid "waiver: {reason} — {detail}"
+msgstr "excepción: {reason} — {detail}"

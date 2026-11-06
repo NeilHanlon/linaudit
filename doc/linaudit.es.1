@@ -1,0 +1,252 @@
+.TH LINAUDIT 1 "2026-11-05" "linaudit 0.2.0" "Comandos de usuario"
+.SH NOMBRE
+linaudit \- auditoría de seguridad de solo lectura para Linux
+.SH SINOPSIS
+.B linaudit
+.RI [ OPCIONES ]
+.SH DESCRIPCIÓN
+.B linaudit
+revisa un sistema Linux (Debian, Ubuntu, RHEL y derivados) en busca de problemas
+de seguridad comunes y le pone un puntaje de 1 (peor) a 10 (mejor), junto con la
+lista de hallazgos ordenada por gravedad y cómo arreglar cada uno.
+.PP
+Corre más de 100 controles en nueve categorías: cuentas y sudo, SSH, permisos del
+sistema de archivos, secretos en texto plano, red y firewall, actualizaciones,
+persistencia e indicios de compromiso, endurecimiento del kernel y los servicios, y
+aplicaciones de servidor habituales (Tomcat, Redis, Docker, PostgreSQL, Samba,
+Apache, nginx).
+.PP
+.B linaudit
+es estrictamente de solo lectura: ningún control modifica el sistema, y nunca
+muestra el valor de un secreto que encuentra, solo el archivo y la línea. El único
+archivo que escribe por su cuenta es la preferencia de idioma del usuario (ver
+.BR IDIOMA ).
+.PP
+Conviene correrlo como root. Sin root varios controles no pueden leer lo que
+necesitan: quedan como no evaluados y el puntaje se limita a 6.
+.PP
+En una terminal,
+.B linaudit
+abre una interfaz interactiva: una pantalla de bienvenida para elegir el perfil
+del sistema, el progreso en vivo y tres pestañas (Resumen, Hallazgos, Categorías).
+Con
+.B ?
+se ven los atajos de teclado. En un pipe, en cron o con
+.B \-\-plain
+imprime un reporte de texto.
+.SH OPCIONES
+.TP
+.BI \-\-profile " PERFIL"
+Perfil del sistema:
+.BR server ,
+.BR desktop ,
+.B container
+o
+.BR auto .
+Sin esta opción, la pantalla de bienvenida pregunta (o se autodetecta si no hay
+terminal). Ver
+.BR PERFILES .
+.TP
+.BR \-y ", " \-\-no\-interactive
+No preguntar el perfil aunque haya terminal; usar la autodetección.
+.TP
+.B \-\-plain
+Imprimir un reporte de texto en vez de abrir la interfaz interactiva.
+.TP
+.B \-\-json
+Imprimir el reporte en JSON, para un colector central.
+.TP
+.BI \-\-output " ARCHIVO"
+Guardar el reporte en
+.I ARCHIVO
+(se crea con permisos 600) en vez de imprimirlo.
+.TP
+.B \-\-all
+Mostrar también los controles aprobados (en la interfaz interactiva, arrancar
+mostrando todos).
+.TP
+.B \-\-fast
+Saltear los barridos completos del sistema de archivos (SUID/SGID, archivos
+world\-writable y sin dueño, integridad de paquetes). Tarda segundos en vez de minutos.
+.TP
+.BI \-\-category " LISTA"
+Correr solo estas categorías, separadas por comas (por ejemplo
+.BR ssh,accounts ).
+El puntaje es entonces parcial. Ver
+.BR \-\-list\-categories .
+.TP
+.BI \-\-waivers " ARCHIVO"
+Leer un archivo extra de excepciones, además de
+.IR /etc/linaudit/waivers.conf .
+.TP
+.BI \-\-min\-score " N"
+Salir con código 1 si el puntaje es menor que
+.I N
+(1 a 10), o si no se pudo evaluar nada. Útil en cron, CI y monitoreo.
+.TP
+.BI \-\-lang " IDIOMA"
+Idioma de la interfaz:
+.B en
+o
+.BR es .
+.TP
+.B \-\-no\-color
+No usar colores.
+.TP
+.B \-\-list\-profiles
+Listar los perfiles, marcar el detectado en este sistema y salir.
+.TP
+.B \-\-list\-categories
+Listar las categorías y salir.
+.TP
+.BR \-h ", " \-\-help
+Mostrar la ayuda y salir.
+.TP
+.BR \-V ", " \-\-version
+Mostrar la versión y salir.
+.SH PERFILES
+Un perfil nunca esconde un control: le cambia la severidad o lo marca como no
+aplicable, y lo deja escrito en el detalle del hallazgo.
+.TP
+.B server
+Criterio completo: todos los controles con su severidad original.
+.TP
+.B desktop
+Para computadoras personales. Relaja controles pensados para servidores
+corporativos (banner legal, vencimiento de contraseñas, envío de logs, fail2ban,
+servicios como cups o avahi) y baja el control de firewall de ALTO a MEDIO.
+.TP
+.B container
+Lo que gestiona el host o el runtime de contenedores (reloj, AppArmor/SELinux,
+auditd, firewall, logs, parámetros del kernel) queda como no aplicable.
+.PP
+El perfil se toma, en este orden, de
+.BR \-\-profile ,
+.BR LINAUDIT_PROFILE ,
+.B profile
+en
+.IR /etc/linaudit/config.toml ,
+la pantalla de bienvenida o la autodetección.
+.SH PUNTAJE
+Cada control pesa según su severidad: CRÍTICO 10, ALTO 6, MEDIO 3, BAJO 1, INFO 0.
+Un control aprobado suma su peso completo, una advertencia la mitad y una falla
+nada; los no aplicables y las excepciones no cuentan. El resultado se lleva a la
+escala 1\(en10 y después se limita según los hallazgos abiertos: 3 o más críticos lo
+limitan a 3, 2 críticos a 4, 1 crítico o 5 o más altos a 6, y de 1 a 4 altos a 8.
+Si no se pudo evaluar más del 10% del peso (casi siempre por correr sin root), el
+puntaje se limita a 6 y la evaluación figura como incompleta.
+.SH EXCEPCIONES
+Los hallazgos aceptados a propósito (por ejemplo, un firewall perimetral dedicado)
+se registran en
+.IR /etc/linaudit/waivers.conf ,
+uno por línea:
+.PP
+.RS
+.EX
+NET\-001   # Firewall perimetral dedicado. Ticket INF\-1234
+.EE
+.RE
+.PP
+Un control con excepción no puntúa y aparece en el reporte con su motivo.
+.SH IDIOMA
+La interfaz, los reportes y la ayuda están en inglés y en castellano. El idioma se
+toma, en este orden, de
+.B \-\-lang
+o
+.BR LINAUDIT_LANG ,
+la preferencia del usuario en
+.IR ~/.config/linaudit/config.toml ,
+.B language
+en
+.IR /etc/linaudit/config.toml ,
+el locale
+.RB ( LANGUAGE ", " LC_ALL ", " LC_MESSAGES ", " LANG )
+y, por último, inglés.
+.PP
+La primera vez que se abre la interfaz interactiva sin un idioma elegido, la
+pantalla de bienvenida lo pregunta y lo guarda en el archivo de preferencias del
+usuario. Para volver a elegirlo, borrá ese archivo o apretá
+.B i
+en la pantalla de bienvenida. Con
+.BR sudo (8)
+se usa la preferencia de quien lo llamó.
+.PP
+Los IDs de los controles y las claves del JSON son los mismos en todos los idiomas.
+.SH ENTORNO
+.TP
+.B LINAUDIT_PROFILE
+Igual que
+.BR \-\-profile .
+.TP
+.B LINAUDIT_LANG
+Igual que
+.BR \-\-lang .
+.TP
+.B LINAUDIT_CONFIG
+Usar este archivo en vez de
+.IR /etc/linaudit/config.toml .
+.TP
+.B LINAUDIT_SCAN_TIMEOUT
+Segundos máximos de cada barrido del sistema de archivos (120 por defecto).
+.TP
+.B NO_COLOR
+No usar colores.
+.TP
+.B LINAUDIT_DEBUG
+Con el valor 1, muestra el error interno de una categoría de controles que falló.
+.SH ARCHIVOS
+.TP
+.I /etc/linaudit/config.toml
+Configuración del sistema:
+.B profile
+y
+.B language
+por defecto.
+.TP
+.I /etc/linaudit/waivers.conf
+Excepciones documentadas.
+.TP
+.I ~/.config/linaudit/config.toml
+Preferencia de idioma del usuario.
+.TP
+.I /var/lib/linaudit/latest.json
+Último reporte de
+.BR linaudit.service ,
+que
+.B linaudit.timer
+corre una vez por semana una vez habilitado
+.RB ( "systemctl enable \-\-now linaudit.timer" ).
+.SH "CÓDIGO DE SALIDA"
+.TP
+.B 0
+La auditoría se completó.
+.TP
+.B 1
+El puntaje es menor que
+.BR \-\-min\-score ,
+o no se pudo evaluar nada.
+.TP
+.B 2
+Error de uso.
+.TP
+.B 130
+Cancelado por el usuario.
+.SH EJEMPLOS
+.EX
+sudo linaudit
+sudo linaudit \-\-plain \-\-profile server
+sudo linaudit \-\-json \-\-output /var/lib/linaudit/latest.json
+sudo linaudit \-\-fast \-\-min\-score 7 \-\-profile server
+.EE
+.SH NOTAS
+Los reportes describen las debilidades de una máquina: guardalos en privado, y
+mandalos a un colector solo por un canal autenticado y cifrado.
+.PP
+Varios controles son heurísticos y pueden dar falsos positivos: los hallazgos son
+cosas para revisar, no veredictos.
+.B linaudit
+no reemplaza una auditoría de cumplimiento CIS/STIG, un análisis forense ni un EDR.
+.SH "VER TAMBIÉN"
+Más información: <https://lexiworks.dev/linaudit>
+.SH AUTORA
+Alexia Michelle. Licencia: AGPL\-3.0\-or\-later.

@@ -1,0 +1,17 @@
+# Runs the audit and keeps the latest report as JSON in /var/lib/linaudit/latest.json.
+# Enable the weekly run with:  systemctl enable --now linaudit.timer
+[Unit]
+Description=linaudit read-only security audit
+Documentation=man:linaudit(1) https://lexiworks.dev/linaudit
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/linaudit --json --output /var/lib/linaudit/latest.json
+# The report describes the weaknesses of this machine: keep it private.
+StateDirectory=linaudit
+StateDirectoryMode=0700
+Nice=19
+IOSchedulingClass=idle
+NoNewPrivileges=yes
+# Do not enable PrivateTmp= or ProtectHome=: the audit has to see the real /tmp and home directories.

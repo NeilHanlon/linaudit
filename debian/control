@@ -1,0 +1,57 @@
+Source: linaudit
+Section: admin
+Priority: optional
+Maintainer: Alexia Michelle <alexia@lexiworks.dev>
+Build-Depends:
+ debhelper-compat (= 13),
+ dh-cargo (>= 31),
+ cargo:native,
+ rustc:native (>= 1.85),
+ libstd-rust-dev,
+ python3:native,
+ librust-clap-dev (>= 4.5),
+ librust-clap+derive-dev (>= 4.5),
+ librust-clap+env-dev (>= 4.5),
+ librust-clap-complete-dev (>= 4.5),
+ librust-jiff-dev (>= 0.2),
+ librust-ratatui-dev (>= 0.29),
+ librust-ratatui+crossterm-dev (>= 0.29),
+ librust-regex-dev (>= 1),
+ librust-serde-dev (>= 1),
+ librust-serde+derive-dev (>= 1),
+ librust-serde-json-dev (>= 1),
+ librust-toml-dev (>= 0.8),
+Standards-Version: 4.7.2
+Homepage: https://lexiworks.dev/linaudit
+Vcs-Browser: https://github.com/alexiarstein/linaudit
+Vcs-Git: https://github.com/alexiarstein/linaudit.git
+Rules-Requires-Root: no
+
+Package: linaudit
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Recommends:
+ iproute2,
+Suggests:
+ distro-info-data,
+ libcap2-bin,
+ openssh-client,
+Built-Using: ${cargo:Built-Using}
+Static-Built-Using: ${cargo:Static-Built-Using}
+Description: read-only security audit for Linux with a 1-10 score
+ linaudit checks a Linux system for common security problems and gives it a
+ score from 1 (worst) to 10 (best), together with the findings sorted by
+ severity and how to fix each one.
+ .
+ It runs more than 100 checks in nine categories: accounts and sudo, SSH,
+ filesystem permissions, plaintext secrets, network and firewall, patching,
+ persistence and signs of compromise, kernel and service hardening, and
+ common server applications (Tomcat, Redis, Docker, PostgreSQL, Samba,
+ Apache, nginx).
+ .
+ It never modifies the system and never prints the value of a secret, only
+ where it was found. Profiles adapt the criteria to servers, desktops and
+ containers. Reports are shown in an interactive terminal interface, as
+ text, or as JSON for a central collector. Available in English and Spanish.
