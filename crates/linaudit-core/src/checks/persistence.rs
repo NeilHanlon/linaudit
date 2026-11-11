@@ -303,6 +303,53 @@ pub fn modified_binaries(out: &str) -> Vec<String> {
         .collect()
 }
 
+/// pids a excluir de PER-013..015: el propio linaudit (se autoinculpaba al ejecutarse desde un
+/// directorio de compilacion en /tmp antes de instalarlo) y, si comparte el mismo exe, su proceso
+/// padre (p.ej. un wrapper re-ejecutado desde el mismo binario). No excluye ningun otro proceso.
+fn self_pids() -> Vec<String> {
+    let me = std::process::id();
+    let mut skip = vec![me.to_string()];
+    if let (Ok(my_exe), Some(ppid)) = (std::fs::read_link("/proc/self/exe"), parent_pid()) {
+        if std::fs::read_link(format!("/proc/{ppid}/exe")).is_ok_and(|p| p == my_exe) {
+            skip.push(ppid.to_string());
+        }
+    }
+    skip
+}
+
+/// ppid del proceso actual, leido de /proc/self/stat.
+fn parent_pid() -> Option<u32> {
+    let stat = std::fs::read_to_string("/proc/self/stat").ok()?;
+    // el nombre del proceso (campo 2) va entre parentesis y puede contener espacios; tras el ')'
+    // vienen: state ppid pgrp ...  -> ppid es el segundo token.
+    stat.rsplit_once(')')?.1.split_whitespace().nth(1)?.parse().ok()
+}
+
+/// Clasifica procesos (pid, destino de /proc/<pid>/exe) en: ejecutados desde /tmp, con el binario
+/// borrado, o desde memoria anonima. `skip` son pids a ignorar (ver `self_pids`).
+fn classify_processes<'a>(
+    procs: impl IntoIterator<Item = (&'a str, &'a str)>,
+    skip: &[String],
+) -> (Vec<String>, Vec<String>, Vec<String>) {
+    let (mut tmpx, mut delx, mut memx) = (Vec::new(), Vec::new(), Vec::new());
+    for (pid, e) in procs {
+        if e.is_empty() || skip.iter().any(|s| s == pid) {
+            continue;
+        }
+        if e.starts_with("/tmp/") || e.starts_with("/var/tmp/") || e.starts_with("/dev/shm/") {
+            tmpx.push(format!("{pid}:{e}"));
+        } else if e.starts_with("/memfd:") {
+            // runc/crun se re-ejecutan desde memfd a proposito (CVE-2019-5736)
+            if !e.contains("/memfd:runc") && !e.contains("/memfd:crun") {
+                memx.push(format!("{pid}:{}", e.trim_end_matches(" (deleted)")));
+            }
+        } else if e.ends_with("(deleted)") {
+            delx.push(format!("{pid}:{}", e.trim_end_matches(" (deleted)")));
+        }
+    }
+    (tmpx, delx, memx)
+}
+
 /// PER-013..015: procesos que corren desde /tmp, memoria anónima o con el binario borrado.
 fn processes(ctx: &Context, em: &mut Emitter) {
     if !ctx.root {
@@ -321,24 +368,18 @@ fn processes(ctx: &Context, em: &mut Emitter) {
         })
         .unwrap_or_default();
     pids.sort();
-    let (mut tmpx, mut delx, mut memx) = (Vec::new(), Vec::new(), Vec::new());
-    for pid in pids {
-        let Ok(exe) = std::fs::read_link(ctx.path(&format!("/proc/{pid}/exe"))) else { continue };
-        let e = exe.to_string_lossy();
-        if e.is_empty() {
-            continue;
-        }
-        if e.starts_with("/tmp/") || e.starts_with("/var/tmp/") || e.starts_with("/dev/shm/") {
-            tmpx.push(format!("{pid}:{e}"));
-        } else if e.starts_with("/memfd:") {
-            // runc/crun se re-ejecutan desde memfd a propósito (CVE-2019-5736)
-            if !e.contains("/memfd:runc") && !e.contains("/memfd:crun") {
-                memx.push(format!("{pid}:{}", e.trim_end_matches(" (deleted)")));
-            }
-        } else if e.ends_with("(deleted)") {
-            delx.push(format!("{pid}:{}", e.trim_end_matches(" (deleted)")));
-        }
-    }
+    // no autoinculpar a linaudit cuando se ejecuta desde un directorio de compilacion en /tmp.
+    let skip = self_pids();
+    let procs: Vec<(String, String)> = pids
+        .into_iter()
+        .filter_map(|pid| {
+            let exe = std::fs::read_link(ctx.path(&format!("/proc/{pid}/exe"))).ok()?;
+            let e = exe.to_string_lossy().into_owned();
+            (!e.is_empty()).then_some((pid, e))
+        })
+        .collect();
+    let (tmpx, delx, memx) =
+        classify_processes(procs.iter().map(|(p, e)| (p.as_str(), e.as_str())), &skip);
     let first8 = |v: &[String]| v.iter().take(8).cloned().collect::<Vec<_>>().join(" ");
     if memx.is_empty() {
         em.pass("PER-015", High, tr!("No process runs from anonymous memory (memfd)"));
@@ -442,5 +483,34 @@ mod tests {
         for id in ["PER-003", "PER-006", "PER-013", "PER-014", "PER-015"] {
             assert_eq!(r[id].status, Status::Error, "{id}");
         }
+    }
+
+    #[test]
+    fn per013_excluye_proceso_propio() {
+        let me = std::process::id().to_string();
+        let parent = "4242"; // padre que comparte el mismo exe que linaudit
+        let skip = vec![me.clone(), parent.to_string()];
+        let procs = [
+            (me.as_str(), "/tmp/build/linaudit"), // propio: excluido, no se autoinculpa
+            (parent, "/tmp/build/linaudit"),      // padre con mismo exe: excluido
+            ("9999", "/tmp/.evil/payload"),       // OTRO proceso en /tmp: debe reportarse
+            ("8888", "/memfd:stage0"),            // memfd anonimo: debe reportarse
+            ("7777", "/memfd:runc_1"),            // runc: ignorado a proposito
+            ("6666", "/usr/bin/bash (deleted)"),  // binario borrado: debe reportarse
+            ("5555", "/usr/bin/bash"),            // normal: nada
+        ];
+        let (tmpx, delx, memx) = classify_processes(procs.iter().copied(), &skip);
+        // el propio linaudit y su padre quedan fuera; el resto se evalua normalmente.
+        assert_eq!(tmpx, ["9999:/tmp/.evil/payload"]);
+        assert_eq!(memx, ["8888:/memfd:stage0"]);
+        assert_eq!(delx, ["6666:/usr/bin/bash"]);
+    }
+
+    #[test]
+    fn per013_sin_exclusion_reporta_todo() {
+        // sin skip, un proceso en /tmp se reporta (comportamiento original intacto).
+        let procs = [("1234", "/tmp/x"), ("1", "/sbin/init")];
+        let (tmpx, _, _) = classify_processes(procs.iter().copied(), &[]);
+        assert_eq!(tmpx, ["1234:/tmp/x"]);
     }
 }
