@@ -65,6 +65,8 @@ static IGNORE_VAL: LazyLock<Regex> = LazyLock::new(|| {
 });
 static VERSION: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^[\^~><=]*[0-9]+(\.[0-9a-z*-]+)+$").expect("regex válida"));
+/// Especificación de permisos tipo `rw-r--r--` (p.ej. reglas permfile de lynis), no una credencial.
+static PERMS: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^[rwxsStT-]{9}([:/]|$)").expect("regex válida"));
 
 /// true si la línea parece contener una credencial real (y no una referencia, ruta, opción, etc.).
 /// Port directo de lib/secret_filter.awk. No devuelve el valor: solo sí/no.
@@ -85,6 +87,7 @@ pub fn looks_like_credential(content: &str) -> bool {
         || val.starts_with(['$', '%', '{', '<', '(', '@', '/', '#', '*', '!', '['])
         || IGNORE_VAL.is_match(val)
         || VERSION.is_match(val)
+        || PERMS.is_match(val)
     {
         return false;
     }
@@ -106,6 +109,8 @@ const NOISE: &[&str] = &[
     "*.example", "*.sample", "*.dist", "*.md", "*.ronn", "*.rst", "*.html", "*.js", "*.map", "*.pyc", "*.py", "*.rb",
     "*.c", "*.h", "*.log", "*.dpkg-*", "*.min.*", "*.svg", "*.lock", "package*.json", "npm-shrinkwrap.json",
     "shadow*", "gshadow*", "passwd*", "*_history", "*.so*", "*.pem", "*.crt",
+    // perfiles de auditoría (p.ej. lynis /etc/lynis/*.prf): reglas que NOMBRAN rutas y permisos, no credenciales
+    "*.prf",
 ];
 /// Fuera de /etc solo se miran archivos con nombre de configuración (evita escanear código fuente).
 const CFGNAMES: &[&str] = &[
@@ -427,9 +432,30 @@ mod tests {
             "password_min_length=12",
             "credential=none",
             "password = /run/secrets/db",
+            // regla de perfil de lynis: nombra /etc/passwd y sus permisos, no es una credencial
+            "permfile=/etc/passwd:rw-r--r--:root:-:WARN:",
         ] {
             assert!(!looks_like_credential(no), "no debería detectar: {no}");
         }
+    }
+
+    #[test]
+    fn perfil_lynis_no_se_marca_como_credencial() {
+        let f = Fixture::new();
+        // la línea exacta del bug (issue #6): /etc/lynis/default.prf:312
+        f.file("/etc/lynis/default.prf", "# perfil de lynis\npermfile=/etc/passwd:rw-r--r--:root:-:WARN:\n")
+            .mode("/etc/lynis/default.prf", 0o644)
+            // una credencial real debe seguir detectándose
+            .file("/etc/app/real.conf", "db_password=Sup3rS3cretValue\n")
+            .mode("/etc/app/real.conf", 0o644);
+        let r = f.run(run);
+        assert_eq!(r["SEC-001"].status, Status::Warn);
+        assert!(!r["SEC-001"].detail.contains("default.prf"), "{}", r["SEC-001"].detail);
+        assert!(!r["SEC-001"].detail.contains("lynis"), "{}", r["SEC-001"].detail);
+        assert!(r["SEC-001"].detail.contains("/etc/app/real.conf"), "{}", r["SEC-001"].detail);
+        assert_eq!(r["SEC-008"].status, Status::Warn, "real.conf es 644");
+        assert!(!r["SEC-008"].detail.contains("default.prf"), "{}", r["SEC-008"].detail);
+        assert!(r["SEC-008"].detail.contains("/etc/app/real.conf"), "{}", r["SEC-008"].detail);
     }
 
     /// Valores de secretos falsos que NUNCA pueden aparecer en un resultado.
