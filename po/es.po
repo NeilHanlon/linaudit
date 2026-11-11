@@ -143,6 +143,11 @@ msgstr "no existe el archivo de excepciones {path}"
 
 #. {name} is replaced by a value: keep it exactly as is
 #: crates/linaudit/src/main.rs
+msgid "{path} is a symlink; refusing to write through it"
+msgstr "{path} es un symlink; se rechaza escribir a través de él"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/main.rs
 msgid "interface: {e}"
 msgstr "interfaz: {e}"
 
