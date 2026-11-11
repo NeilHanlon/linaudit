@@ -303,25 +303,48 @@ pub fn modified_binaries(out: &str) -> Vec<String> {
         .collect()
 }
 
-/// pids a excluir de PER-013..015: el propio linaudit (se autoinculpaba al ejecutarse desde un
-/// directorio de compilacion en /tmp antes de instalarlo) y, si comparte el mismo exe, su proceso
-/// padre (p.ej. un wrapper re-ejecutado desde el mismo binario). No excluye ningun otro proceso.
-fn self_pids() -> Vec<String> {
+/// Procesos a excluir de PER-013..015: el propio linaudit (se autoinculpaba al ejecutarse desde un
+/// directorio de compilacion en /tmp antes de instalarlo) y, si corre el mismo binario (mismo
+/// dispositivo e inodo, no solo la misma ruta), su proceso padre (p.ej. un wrapper re-ejecutado
+/// desde el mismo binario). No excluye ningun otro proceso. Devuelve (pid, ruta del exe) de cada
+/// excluido para poder anunciarlo en el detalle: nada se suprime en silencio.
+fn self_pids() -> Vec<(String, String)> {
     let me = std::process::id();
-    let mut skip = vec![me.to_string()];
-    if let (Ok(my_exe), Some(ppid)) = (std::fs::read_link("/proc/self/exe"), parent_pid()) {
-        if std::fs::read_link(format!("/proc/{ppid}/exe")).is_ok_and(|p| p == my_exe) {
-            skip.push(ppid.to_string());
+    let my_exe =
+        std::fs::read_link("/proc/self/exe").map(|p| p.to_string_lossy().into_owned()).unwrap_or_default();
+    let mut skip = vec![(me.to_string(), my_exe)];
+    if let Some(ppid) = parent_pid() {
+        let parent_link = format!("/proc/{ppid}/exe");
+        // identidad por (dispositivo, inodo) del binario real, no por coincidencia de la ruta: una
+        // ruta igual puede apuntar a ficheros distintos (bind mounts, chroots, binario reemplazado).
+        if let Ok(parent_exe) = std::fs::read_link(&parent_link) {
+            if same_binary("/proc/self/exe", &parent_link) {
+                skip.push((ppid.to_string(), parent_exe.to_string_lossy().into_owned()));
+            }
         }
     }
     skip
 }
 
+/// Verdadero si ambas rutas resuelven al mismo fichero (mismo dispositivo e inodo). `std::fs::metadata`
+/// sigue el symlink magico de /proc/<pid>/exe hasta el binario real. Ante cualquier fallo de stat
+/// devuelve false: mas vale no excluir que excluir de mas.
+fn same_binary(a: impl AsRef<std::path::Path>, b: impl AsRef<std::path::Path>) -> bool {
+    match (std::fs::metadata(a), std::fs::metadata(b)) {
+        (Ok(ma), Ok(mb)) => ma.dev() == mb.dev() && ma.ino() == mb.ino(),
+        _ => false,
+    }
+}
+
 /// ppid del proceso actual, leido de /proc/self/stat.
 fn parent_pid() -> Option<u32> {
-    let stat = std::fs::read_to_string("/proc/self/stat").ok()?;
-    // el nombre del proceso (campo 2) va entre parentesis y puede contener espacios; tras el ')'
-    // vienen: state ppid pgrp ...  -> ppid es el segundo token.
+    parse_ppid(&std::fs::read_to_string("/proc/self/stat").ok()?)
+}
+
+/// Extrae el ppid de una linea de /proc/<pid>/stat. El nombre del proceso (campo 2) va entre
+/// parentesis y puede contener espacios y ')'; tras el ultimo ')' vienen: state ppid pgrp ...
+/// -> ppid es el segundo token. Devuelve None si la linea esta malformada o no hay ppid.
+fn parse_ppid(stat: &str) -> Option<u32> {
     stat.rsplit_once(')')?.1.split_whitespace().nth(1)?.parse().ok()
 }
 
@@ -369,7 +392,8 @@ fn processes(ctx: &Context, em: &mut Emitter) {
         .unwrap_or_default();
     pids.sort();
     // no autoinculpar a linaudit cuando se ejecuta desde un directorio de compilacion en /tmp.
-    let skip = self_pids();
+    let excluded = self_pids();
+    let skip: Vec<String> = excluded.iter().map(|(pid, _)| pid.clone()).collect();
     let procs: Vec<(String, String)> = pids
         .into_iter()
         .filter_map(|pid| {
@@ -381,6 +405,13 @@ fn processes(ctx: &Context, em: &mut Emitter) {
     let (tmpx, delx, memx) =
         classify_processes(procs.iter().map(|(p, e)| (p.as_str(), e.as_str())), &skip);
     let first8 = |v: &[String]| v.iter().take(8).cloned().collect::<Vec<_>>().join(" ");
+    // pids suprimidos de PER-013..015 (linaudit y su padre): se anuncian para que un operador o
+    // revisor de logs vea que se excluyo y por que, en vez de desaparecer en silencio.
+    let excluded_note = excluded
+        .iter()
+        .map(|(pid, exe)| format!("excluded: own/parent process {pid}:{exe}"))
+        .collect::<Vec<_>>()
+        .join(" ");
     if memx.is_empty() {
         em.pass("PER-015", High, tr!("No process runs from anonymous memory (memfd)"));
     } else {
@@ -389,10 +420,10 @@ fn processes(ctx: &Context, em: &mut Emitter) {
             .with_fix(tr!("Typical of fileless malware, though some legitimate agents use it: identify the process (ls -l /proc/<pid>/exe)"));
     }
     if tmpx.is_empty() {
-        em.pass("PER-013", High, tr!("No process runs from /tmp, /dev/shm or memfd"));
+        em.pass("PER-013", High, tr!("No process runs from /tmp, /dev/shm or memfd")).with_detail(&excluded_note);
     } else {
         em.fail("PER-013", High, tr!("Processes running from /tmp, /dev/shm or anonymous memory"))
-            .with_detail(first8(&tmpx))
+            .with_detail(format!("{} {excluded_note}", first8(&tmpx)))
             .with_fix(tr!("Investigate immediately (ls -l /proc/<pid>/exe, /proc/<pid>/cmdline)"));
     }
     if delx.is_empty() {
@@ -504,6 +535,19 @@ mod tests {
         assert_eq!(tmpx, ["9999:/tmp/.evil/payload"]);
         assert_eq!(memx, ["8888:/memfd:stage0"]);
         assert_eq!(delx, ["6666:/usr/bin/bash"]);
+    }
+
+    #[test]
+    fn parse_ppid_comm_con_parentesis_y_espacio() {
+        // el nombre del proceso (campo 2) contiene ')' y un espacio; el ppid va tras el ultimo ')'.
+        assert_eq!(parse_ppid("1234 (we)ird proc) S 4242 1 1 0 -1 4194560 100 0 0 0"), Some(4242));
+    }
+
+    #[test]
+    fn parse_ppid_malformado_o_sin_padre() {
+        assert_eq!(parse_ppid("basura sin parentesis"), None);
+        assert_eq!(parse_ppid("1234 (proc) S"), None); // hay estado pero no ppid tras el
+        assert_eq!(parse_ppid(""), None);
     }
 
     #[test]
