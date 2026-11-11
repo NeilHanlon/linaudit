@@ -157,16 +157,22 @@ fn run(args: Args, lang_source: lang::Source) -> Result<ExitCode, String> {
     Ok(ExitCode::SUCCESS)
 }
 
-/// Abre el archivo de salida con permisos 0o600, rechazando escribir a través de un symlink.
+/// Abre el archivo de salida con permisos 0o600, rechazando escribir a traves de cualquier
+/// archivo no regular (symlink, FIFO, socket, dispositivo o directorio).
 ///
-/// linaudit suele correr como root; si un atacante deja un symlink en la ruta de salida (un
-/// directorio compartido, /tmp, una ruta de cron), seguirlo truncaría el archivo apuntado
-/// (sobrescritura de archivo arbitrario). Por eso, si el componente final ya existe y es un
-/// symlink, se rechaza en vez de seguirlo. No existir todavía es lo normal y no es error.
+/// linaudit suele correr como root; si un atacante deja una trampa en la ruta de salida (un
+/// directorio compartido, /tmp, una ruta de cron), seguirla puede truncar un archivo apuntado
+/// por un symlink (sobrescritura arbitraria), colgar el proceso al abrir un FIFO para escritura,
+/// o filtrar el reporte entero por la tuberia del atacante. Por eso, si el componente final ya
+/// existe y no es un archivo regular, se rechaza en vez de seguirlo. No existir todavia es lo
+/// normal y no es error: el archivo se crea.
 fn open_output(path: &std::path::Path) -> Result<std::fs::File, String> {
     if let Ok(meta) = std::fs::symlink_metadata(path) {
-        if meta.file_type().is_symlink() {
-            return Err(tr!("{path} is a symlink; refusing to write through it", path = path.display()));
+        if !meta.file_type().is_file() {
+            return Err(tr!(
+                "{path} exists and is not a regular file (symlink, FIFO, socket, device or directory); refusing to write through it",
+                path = path.display()
+            ));
         }
     }
     let f = std::fs::OpenOptions::new()
@@ -248,6 +254,38 @@ mod tests {
         // ...y el archivo apuntado por el symlink queda intacto.
         assert_eq!(std::fs::read_to_string(&target).unwrap(), "datos importantes");
 
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn rechaza_escribir_a_traves_de_un_fifo() {
+        use std::os::unix::fs::FileTypeExt;
+        let dir = std::env::temp_dir().join(format!("linaudit-output-fifo-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let fifo = dir.join("salida.fifo");
+        // Creamos un FIFO preexistente con mkfifo(1), sin depender de libc en el crate.
+        let status = std::process::Command::new("mkfifo").arg(&fifo).status().expect("ejecutar mkfifo");
+        assert!(status.success(), "mkfifo fallo");
+
+        // abrir la salida sobre un FIFO debe rechazarse sin colgarse ni escribir a traves de el...
+        let err = open_output(&fifo).unwrap_err();
+        assert!(err.contains("regular") || err.contains("FIFO"), "mensaje inesperado: {err}");
+        // ...y la ruta sigue siendo un FIFO, no fue reemplazada ni truncada.
+        let ft = std::fs::symlink_metadata(&fifo).unwrap().file_type();
+        assert!(ft.is_fifo(), "la ruta ya no es un FIFO");
+
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn rechaza_escribir_sobre_un_directorio() {
+        let dir = std::env::temp_dir().join(format!("linaudit-output-dir-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        // la ruta de salida es un directorio existente: debe rechazarse.
+        let err = open_output(&dir).unwrap_err();
+        assert!(err.contains("regular") || err.contains("directorio"), "mensaje inesperado: {err}");
+        // el directorio sigue existiendo intacto.
+        assert!(dir.is_dir());
         std::fs::remove_dir_all(&dir).unwrap();
     }
 
