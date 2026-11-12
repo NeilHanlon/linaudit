@@ -257,7 +257,13 @@ fn score_note(r: &Report) -> Option<(String, bool)> {
     let s = &r.score;
     s.score?;
     if s.incomplete {
-        Some((tr!("Coverage {pct}% · capped at 6/10", pct = format!("{:.0}", s.coverage)), true))
+        // Módulo caído: el techo es por una categoría perdida, no por baja cobertura.
+        let note = if s.module_panic {
+            tr!("Module crashed · capped at 6/10").to_string()
+        } else {
+            tr!("Coverage {pct}% · capped at 6/10", pct = format!("{:.0}", s.coverage))
+        };
+        Some((note, true))
     } else if s.cap > 0 && s.cap_reason == CapReason::Hallazgos {
         Some((tr!("Capped at {cap}/10 by serious findings", cap = s.cap), true))
     } else if !r.partial_categories.is_empty() {

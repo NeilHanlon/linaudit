@@ -78,6 +78,12 @@ pub struct CheckResult {
     pub title: String,
     pub detail: String,
     pub fix: String,
+    /// Marca interna: este resultado es el ERROR sintético que deja un módulo que
+    /// entró en pánico (ver `checks::run_all`). Lo consume `score::compute` para
+    /// aplicar el techo de cobertura. No se serializa: es señal de transporte
+    /// entre los controles y el puntaje, no un dato del reporte.
+    #[serde(skip)]
+    pub module_panic: bool,
 }
 
 impl CheckResult {
@@ -96,11 +102,19 @@ impl CheckResult {
             title: sanitize(title.as_ref()),
             detail: String::new(),
             fix: String::new(),
+            module_panic: false,
         }
     }
 
     pub fn detail(mut self, detail: impl AsRef<str>) -> Self {
         self.set_detail(detail.as_ref());
+        self
+    }
+
+    /// Marca este resultado como el ERROR de un módulo que entró en pánico.
+    /// Lo pone `checks::run_all`; lo lee `score::compute` para el techo de cobertura.
+    pub fn module_panic(mut self) -> Self {
+        self.module_panic = true;
         self
     }
 

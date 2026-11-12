@@ -320,6 +320,10 @@ msgstr "PUNTAJE PARCIAL: solo se evaluaron las categorías {categories}; no es e
 msgid "Coverage {pct}%: {n} checks could not be evaluated (missing root?). Until they are, the score cannot exceed 6/10."
 msgstr "Cobertura {pct}%: {n} controles no pudieron evaluarse (¿falta root?). Hasta completarlos el puntaje no puede superar 6/10."
 
+#: crates/linaudit/src/text.rs
+msgid "A check module crashed: a whole category was lost. Until it is evaluated again, the score cannot exceed 6/10."
+msgstr "Un módulo de control se cayó: se perdió una categoría entera. Hasta volver a evaluarla, el puntaje no puede superar 6/10."
+
 #. {name} is replaced by a value: keep it exactly as is
 #: crates/linaudit/src/text.rs
 msgid "Cap applied: {cap}/10 due to open critical/high findings"
@@ -424,6 +428,10 @@ msgstr "Preparando…"
 #: crates/linaudit/src/tui/ui.rs
 msgid "Coverage {pct}% · capped at 6/10"
 msgstr "Cobertura {pct}% · tope 6/10"
+
+#: crates/linaudit/src/tui/ui.rs
+msgid "Module crashed · capped at 6/10"
+msgstr "Módulo caído · tope 6/10"
 
 #. {name} is replaced by a value: keep it exactly as is
 #: crates/linaudit/src/tui/ui.rs
