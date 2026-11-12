@@ -136,11 +136,17 @@ pub fn render(r: &Report, st: &Style, show_all: bool, user: &str, date: &str) ->
     }
     if s.score.is_some() {
         if s.incomplete {
-            let line = tr!(
-                "Coverage {pct}%: {n} checks could not be evaluated (missing root?). Until they are, the score cannot exceed 6/10.",
-                pct = format!("{:.1}", s.coverage),
-                n = n.error
-            );
+            // Un módulo caído tapa una categoría entera: el techo no es por "falta
+            // de cobertura/root" sino por una categoría que no se pudo evaluar.
+            let line = if s.module_panic {
+                tr!("A check module crashed: a whole category was lost. Until it is evaluated again, the score cannot exceed 6/10.").to_string()
+            } else {
+                tr!(
+                    "Coverage {pct}%: {n} checks could not be evaluated (missing root?). Until they are, the score cannot exceed 6/10.",
+                    pct = format!("{:.1}", s.coverage),
+                    n = n.error
+                )
+            };
             let _ = writeln!(o, "  {yel}{line}{rst}");
         } else if s.cap > 0 && s.cap_reason == CapReason::Hallazgos {
             let line = tr!("Cap applied: {cap}/10 due to open critical/high findings", cap = s.cap);
@@ -239,4 +245,60 @@ pub fn render(r: &Report, st: &Style, show_all: bool, user: &str, date: &str) ->
         o.push('\n');
     }
     o
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use linaudit_core::Profile;
+    use linaudit_core::score;
+
+    fn report(results: Vec<CheckResult>) -> Report {
+        linaudit_core::i18n::set_lang(linaudit_core::i18n::Lang::Es);
+        Report {
+            schema: 1,
+            tool: "linaudit",
+            version: "test",
+            host: "h".into(),
+            os: "Debian".into(),
+            timestamp: "t".into(),
+            root: true,
+            profile: Profile::Server,
+            profile_source: ProfileSource::Argument,
+            partial_categories: vec![],
+            score: score::compute(&results),
+            results,
+        }
+    }
+
+    fn pass(n: usize) -> Vec<CheckResult> {
+        (0..n).map(|i| CheckResult::new(format!("OK-{i}"), Severity::High, Status::Pass, "accounts", "ok")).collect()
+    }
+
+    /// Un módulo en pánico muestra el mensaje de "módulo caído", no el de cobertura/root.
+    #[test]
+    fn modulo_en_panico_muestra_mensaje_propio() {
+        let mut results = pass(50);
+        results.push(
+            CheckResult::new("RUN-ssh", Severity::Low, Status::Error, "ssh", "modulo con error").module_panic(),
+        );
+        let r = report(results);
+        let out = render(&r, &Style { color: false, utf8: true }, false, "ana", "hoy");
+        assert!(out.contains("Un módulo de control se cayó"), "{out}");
+        assert!(!out.contains("¿falta root?"), "no debe mostrar el texto de cobertura:\n{out}");
+    }
+
+    /// Baja cobertura genuina (sin pánico) conserva el mensaje de cobertura/root.
+    #[test]
+    fn baja_cobertura_muestra_mensaje_de_cobertura() {
+        let mut results = pass(10);
+        results.extend(
+            (0..10).map(|i| CheckResult::new(format!("ERR-{i}"), Severity::Critical, Status::Error, "ssh", "sin evaluar")),
+        );
+        let r = report(results);
+        assert!(r.score.incomplete && !r.score.module_panic);
+        let out = render(&r, &Style { color: false, utf8: true }, false, "ana", "hoy");
+        assert!(out.contains("¿falta root?"), "{out}");
+        assert!(!out.contains("Un módulo de control se cayó"), "{out}");
+    }
 }

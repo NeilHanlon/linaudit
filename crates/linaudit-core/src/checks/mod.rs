@@ -127,6 +127,9 @@ pub fn run_all(ctx: &Context, only: &[String], mut on_module: impl FnMut(&Module
         let outcome = catch_unwind(AssertUnwindSafe(|| (m.run)(ctx, &mut em)));
         results.extend(em.into_results());
         if outcome.is_err() {
+            // Señal explícita de pánico de módulo: `module_panic()` la marca y
+            // `score::compute` la consume para aplicar el techo de cobertura. No
+            // dependemos del prefijo "RUN-" del id, que es solo para mostrar.
             results.push(
                 CheckResult::new(
                     format!("RUN-{}", m.category),
@@ -135,7 +138,8 @@ pub fn run_all(ctx: &Context, only: &[String], mut on_module: impl FnMut(&Module
                     m.category,
                     tr!("The {category} module ended with an error", category = m.category),
                 )
-                .detail(tr!("run with LINAUDIT_DEBUG=1 to see the details")),
+                .detail(tr!("run with LINAUDIT_DEBUG=1 to see the details"))
+                .module_panic(),
             );
         }
     }

@@ -60,6 +60,10 @@ pub struct Score {
     /// Porcentaje del peso que se pudo evaluar.
     pub coverage: f64,
     pub incomplete: bool,
+    /// true si el techo de cobertura lo forzó un módulo que entró en pánico (se
+    /// perdió una categoría entera), no una cobertura baja por falta de root.
+    /// Permite que el reporte muestre el motivo correcto (ver text.rs / tui/ui.rs).
+    pub module_panic: bool,
     pub counts: Counts,
     /// Ordenadas por nombre.
     pub categories: Vec<CategoryScore>,
@@ -79,6 +83,9 @@ fn round1(x: f64) -> f64 {
 pub fn compute(results: &[CheckResult]) -> Score {
     let mut counts = Counts::default();
     let (mut poss, mut earn, mut errw) = (0.0_f64, 0.0_f64, 0.0_f64);
+    // Un módulo entero entró en pánico (RUN-<categoría>): se perdió una categoría
+    // completa, cuyo peso real es desconocido.
+    let mut module_error = false;
     // categoría -> (posible, obtenido, fallas, controles)
     let mut cats: BTreeMap<&str, (f64, f64, u32, u32)> = BTreeMap::new();
 
@@ -92,6 +99,11 @@ pub fn compute(results: &[CheckResult]) -> Score {
             Status::Error => {
                 counts.error += 1;
                 errw += w;
+                // Marcador explícito que deja checks::run_all al atrapar un pánico;
+                // no se infiere del prefijo "RUN-" del id.
+                if r.module_panic {
+                    module_error = true;
+                }
             }
             Status::Waived => counts.waived += 1,
         }
@@ -143,6 +155,7 @@ pub fn compute(results: &[CheckResult]) -> Score {
             cap_reason: CapReason::Cobertura,
             coverage: 0.0,
             incomplete: true,
+            module_panic: module_error,
             counts,
             categories,
         };
@@ -164,8 +177,15 @@ pub fn compute(results: &[CheckResult]) -> Score {
     }
 
     let coverage = 100.0 * poss / (poss + errw);
+    // Si un módulo entró en pánico se perdió una categoría entera: su peso real
+    // es desconocido, por lo que la cobertura calculada lo subestima (el error
+    // RUN-<cat> solo aporta peso LOW=1). Tratamos todo fallo de módulo como
+    // cobertura insuficiente: se fuerza "incompleto" y se aplica el techo de
+    // cobertura, para que una categoría que falló en silencio no pueda reportar
+    // un puntaje alto y "completo".
+    let incomplete = coverage < 90.0 || module_error;
     let mut reason = CapReason::Hallazgos;
-    if coverage < 90.0 && cap > 6 {
+    if incomplete && cap > 6 {
         cap = 6;
         reason = CapReason::Cobertura;
     }
@@ -178,7 +198,8 @@ pub fn compute(results: &[CheckResult]) -> Score {
         cap: if cap < 10 && raw > f64::from(cap) { cap } else { 0 },
         cap_reason: reason,
         coverage: round1(coverage),
-        incomplete: coverage < 90.0,
+        incomplete,
+        module_panic: module_error,
         counts,
         categories,
     }
@@ -257,6 +278,39 @@ mod tests {
         mk(&mut v, 10, Error, Critical);
         let s = compute(&v);
         assert!(s.incomplete);
+        assert_eq!(s.cap_reason, CapReason::Cobertura);
+    }
+
+    /// Un módulo que entra en pánico emite un error RUN-<categoría> de peso LOW.
+    /// Ese error borra una categoría entera del denominador: sin la correccion la
+    /// cobertura apenas baja (99%+) y el puntaje se reporta alto y "completo",
+    /// ocultando que una categoria fallo. Debe forzar "incompleto" y techo de cobertura.
+    #[test]
+    fn modulo_en_panico_no_puntua_como_completo() {
+        let mut v = Vec::new();
+        mk(&mut v, 50, Pass, High);
+        // Simula el pánico del módulo ssh: checks/mod.rs marca el ERROR con module_panic().
+        v.push(
+            CheckResult::new("RUN-ssh", Severity::Low, Status::Error, "ssh", "modulo con error").module_panic(),
+        );
+        let s = compute(&v);
+        assert!(s.incomplete, "un módulo en pánico debe dejar la corrida incompleta");
+        assert!(s.module_panic, "el puntaje debe marcar que la causa fue un módulo caído");
+        assert_eq!(s.cap_reason, CapReason::Cobertura);
+        // Sin la corrección esto daría 10; el techo de cobertura lo baja a 6.
+        assert_eq!(s.score, Some(6), "no debe reportar un puntaje alto con una categoría caída");
+    }
+
+    /// El marcador es explícito: un ERROR con id "RUN-" pero SIN module_panic (p. ej.
+    /// baja cobertura por falta de root) no debe tratarse como módulo caído.
+    #[test]
+    fn error_sin_marcador_no_es_modulo_en_panico() {
+        let mut v = Vec::new();
+        mk(&mut v, 10, Pass, High);
+        mk(&mut v, 10, Error, Critical);
+        let s = compute(&v);
+        assert!(s.incomplete, "baja cobertura deja la corrida incompleta");
+        assert!(!s.module_panic, "sin el marcador no es un pánico de módulo");
         assert_eq!(s.cap_reason, CapReason::Cobertura);
     }
 }
