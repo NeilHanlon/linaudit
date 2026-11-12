@@ -1,3 +1,19 @@
+linaudit (0.2.0-2) unstable; urgency=medium
+
+  * APP-050/APP-051: detect Apache by its main config file (apache2.conf /
+    httpd.conf) instead of the /etc/apache2 directory, which javascript-common
+    creates on Debian without Apache installed (false positive).
+  * FS-017: only list directories that are world-writable without the sticky
+    bit; any directory with an orphan uid/gid was being reported (GitHub #4).
+  * PER-013: exclude linaudit's own process (and its parent, matched by
+    dev+inode) from the check (GitHub #10).
+  * SEC-001/SEC-008: do not flag Lynis profile path rules as credentials
+    (GitHub #9).
+  * Refuse to write --output to anything other than a regular file
+    (symlink, FIFO, device, directory) (GitHub #8).
+
+ -- Alexia Michelle <alexia@lexiworks.dev>  Wed, 11 Nov 2026 23:37:43 -0300
+
 linaudit (0.2.0-1) UNRELEASED; urgency=medium
 
   * Initial release.

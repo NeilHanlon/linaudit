@@ -280,28 +280,27 @@ fn full_scan(ctx: &Context, em: &mut Emitter, all: &[Mount], passwd: &[super::ut
         let opts = WalkOpts { xdev: true, prune: Some(&prune), deadline: Some(Instant::now() + scan_timeout()), ..Default::default() };
         walk(ctx, root, &opts, &mut |e| {
             let (mode, file, dir) = (e.mode(), e.is_file(), e.is_dir());
-            let interesting = (file && mode & 0o002 != 0)
-                || (dir && mode & 0o002 != 0 && mode & 0o1000 == 0)
-                || (file && mode & 0o6000 != 0)
-                || !uids.contains(&e.meta.uid())
-                || !gids.contains(&e.meta.gid());
-            if !interesting || !seen.insert(e.path.to_string()) {
+            // cada predicado se calcula una vez: decide si la entrada interesa y en qué lista cae
+            let ww_file = file && mode & 0o002 != 0;
+            let ww_dir = dir && mode & 0o002 != 0 && mode & 0o1000 == 0;
+            let sugid_file = file && mode & 0o6000 != 0;
+            let orphaned = !uids.contains(&e.meta.uid()) || !gids.contains(&e.meta.gid());
+            if !(ww_file || ww_dir || sugid_file || orphaned) || !seen.insert(e.path.to_string()) {
                 return;
             }
             let p = e.path.to_string();
-            if !uids.contains(&e.meta.uid()) || !gids.contains(&e.meta.gid()) {
+            if orphaned {
                 orphan.push(p.clone());
             }
-            if file {
-                if mode & 0o002 != 0 && !p.contains("/.cache/") && !p.contains("/.local/share/") {
-                    let system = ["/etc/", "/usr/", "/bin/", "/sbin/", "/boot/", "/opt/"].iter().any(|d| p.starts_with(d))
-                        || p.starts_with("/lib");
-                    if system { wwsys.push(p.clone()) } else { wwoth.push(p.clone()) }
-                }
-                if mode & 0o6000 != 0 {
-                    sugid.push((mode, p));
-                }
-            } else if dir {
+            if ww_file && !p.contains("/.cache/") && !p.contains("/.local/share/") {
+                let system =
+                    ["/etc/", "/usr/", "/bin/", "/sbin/", "/boot/", "/opt/"].iter().any(|d| p.starts_with(d)) || p.starts_with("/lib");
+                if system { wwsys.push(p.clone()) } else { wwoth.push(p.clone()) }
+            }
+            if sugid_file {
+                sugid.push((mode, p.clone()));
+            }
+            if ww_dir {
                 wwdir.push(p);
             }
         });
@@ -455,6 +454,23 @@ mod tests {
         assert_eq!(r["FS-015"].title, "Archivos world-writable en rutas del sistema (1)");
         assert_eq!(r["FS-016"].detail, "/home/yo/foto.jpg", ".cache no cuenta");
         assert_eq!(r["FS-017"].detail, "/srv/abierto");
+    }
+
+    #[test]
+    fn directorio_huerfano_no_es_world_writable() {
+        let mut f = Fixture::new();
+        f.fast = false;
+        // passwd/group sin el usuario que corre los tests: todo el fixture queda huérfano,
+        // como el pg_data de un contenedor con uid 26 inexistente en el host
+        f.file("/etc/passwd", "root:x:0:0::/root:/bin/bash\n")
+            .file("/etc/group", "root:x:0:\n")
+            .dir("/srv/pg_data")
+            .mode("/srv/pg_data", 0o700)
+            .dir("/srv/tmpcomun")
+            .mode("/srv/tmpcomun", 0o1777);
+        let r = f.run(run);
+        assert_eq!(r["FS-017"].status, Status::Pass, "{}", r["FS-017"].detail);
+        assert!(r["FS-018"].detail.contains("/srv/pg_data"));
     }
 
     #[test]
