@@ -2514,7 +2514,19 @@ msgid "could not read or evaluate the configuration (not root?)"
 msgstr ""
 
 #: crates/linaudit-core/src/checks/ssh.rs
+msgid "configuration could not be fully evaluated"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "a present drop-in was skipped (file/byte cap); this setting is indeterminate"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/ssh.rs
 msgid " (static config, no defaults: sshd -T unavailable)"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "could not fully evaluate the configuration: a present drop-in was skipped (file/byte cap); settings that fall back to defaults are reported as indeterminate, not PASS"
 msgstr ""
 
 #: crates/linaudit-core/src/checks/ssh.rs

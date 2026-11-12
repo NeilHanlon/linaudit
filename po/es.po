@@ -2529,8 +2529,20 @@ msgid "could not read or evaluate the configuration (not root?)"
 msgstr "no se pudo leer ni evaluar la configuración (¿sin root?)"
 
 #: crates/linaudit-core/src/checks/ssh.rs
+msgid "configuration could not be fully evaluated"
+msgstr "no se pudo evaluar la configuración por completo"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "a present drop-in was skipped (file/byte cap); this setting is indeterminate"
+msgstr "se omitió un drop-in presente (tope de archivos/bytes); este ajuste es indeterminado"
+
+#: crates/linaudit-core/src/checks/ssh.rs
 msgid " (static config, no defaults: sshd -T unavailable)"
 msgstr " (config estática, sin defaults: sshd -T no disponible)"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "could not fully evaluate the configuration: a present drop-in was skipped (file/byte cap); settings that fall back to defaults are reported as indeterminate, not PASS"
+msgstr "no se pudo evaluar la configuración por completo: se omitió un drop-in presente (tope de archivos/bytes); los ajustes que caen a un default se reportan como indeterminados, no PASS"
 
 #: crates/linaudit-core/src/checks/ssh.rs
 msgid "Direct root login disabled"
