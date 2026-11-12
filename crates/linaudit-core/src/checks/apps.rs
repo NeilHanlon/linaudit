@@ -361,7 +361,10 @@ fn samba(ctx: &Context, em: &mut Emitter, detected: &mut Vec<&str>) {
     }
 }
 
-/// Como `grep -r`: archivos de un árbol sin seguir symlinks, en orden de recorrido.
+/// Como `grep -r`: archivos de un árbol sin seguir symlinks. El recorrido de `read_dir`
+/// no tiene orden garantizado, así que ordenamos las rutas para que el resultado sea
+/// determinista: de lo contrario el "último" entre archivos (ver `last_directive`)
+/// dependería del sistema de archivos y el veredicto podría cambiar entre corridas.
 fn tree_files(ctx: &Context, dir: &str) -> Vec<String> {
     let mut v = Vec::new();
     walk(ctx, dir, &WalkOpts::default(), &mut |e| {
@@ -369,6 +372,7 @@ fn tree_files(ctx: &Context, dir: &str) -> Vec<String> {
             v.push(e.path.to_string());
         }
     });
+    v.sort();
     v
 }
 
@@ -382,6 +386,16 @@ fn grep_tree(ctx: &Context, dir: &str, re: &Regex, exclude: Option<&Regex>, max:
         .collect()
 }
 
+/// Última aparición (archivo, línea, texto) cuyo nombre de directiva coincide con `name`,
+/// en orden de recorrido del árbol. Para directivas de valor único (ServerTokens,
+/// server_tokens) gana la última que carga el servidor, no "cualquier coincidencia":
+/// una insegura escrita después anula a una segura anterior, y viceversa. El recorrido
+/// aproxima el orden de carga sin resolver los Include; el nombre debe compararse sin
+/// distinguir mayúsculas (`ci`).
+fn last_directive(ctx: &Context, dir: &str, name: &Regex) -> Option<(String, usize, String)> {
+    super::util::grep_files(ctx, &tree_files(ctx, dir), name, None).into_iter().next_back()
+}
+
 fn web(ctx: &Context, em: &mut Emitter, detected: &mut Vec<&str>) {
     // Apache se detecta por su config principal, no por el directorio: en Debian
     // javascript-common deja /etc/apache2/conf-available/ aunque Apache no esté instalado.
@@ -391,14 +405,17 @@ fn web(ctx: &Context, em: &mut Emitter, detected: &mut Vec<&str>) {
         .map(|(dir, _)| dir);
     if let Some(ap) = apache {
         detected.push("apache");
-        let tokens = Regex::new(r"^[[:space:]]*ServerTokens[[:space:]]+(Prod|ProductOnly)").expect("regex válida");
-        if grep_tree(ctx, ap, &tokens, None, 1).is_empty() {
-            em.warn("APP-050", Low, tr!("Apache exposes its version (ServerTokens)")).with_detail(ap).with_fix(tr!("ServerTokens Prod and ServerSignature Off"));
-        } else {
+        // Los nombres de directiva de Apache no distinguen mayúsculas y gana la última
+        // en orden de carga: evaluamos la última aparición de ServerTokens, no cualquiera.
+        let tokens_name = ci(r"^[[:space:]]*ServerTokens[[:space:]]+");
+        let tokens_prod = ci(r"^[[:space:]]*ServerTokens[[:space:]]+(ProductOnly|Prod)\b");
+        if last_directive(ctx, ap, &tokens_name).is_some_and(|(_, _, l)| tokens_prod.is_match(&l)) {
             em.pass("APP-050", Low, "Apache: ServerTokens Prod");
+        } else {
+            em.warn("APP-050", Low, tr!("Apache exposes its version (ServerTokens)")).with_detail(ap).with_fix(tr!("ServerTokens Prod and ServerSignature Off"));
         }
-        let indexes = Regex::new(r"^[[:space:]]*Options[[:space:]].*[[:space:]+]?Indexes").expect("regex válida");
-        let minus = Regex::new(r"Options.*-Indexes").expect("regex válida");
+        let indexes = ci(r"^[[:space:]]*Options[[:space:]].*[[:space:]+]?Indexes");
+        let minus = ci(r"Options.*-Indexes");
         let x = grep_tree(ctx, ap, &indexes, Some(&minus), 5);
         if x.is_empty() {
             em.pass("APP-051", Medium, tr!("Apache: no directory listing (Options Indexes)"));
@@ -408,13 +425,16 @@ fn web(ctx: &Context, em: &mut Emitter, detected: &mut Vec<&str>) {
     }
     if ctx.path("/etc/nginx").is_dir() {
         detected.push("nginx");
-        let tokens = Regex::new(r"^[[:space:]]*server_tokens[[:space:]]+off").expect("regex válida");
-        if grep_tree(ctx, "/etc/nginx", &tokens, None, 1).is_empty() {
-            em.warn("APP-052", Low, tr!("nginx exposes its version (server_tokens)")).with_detail("/etc/nginx").with_fix("server_tokens off;");
-        } else {
+        // Igual que en Apache: gana la última directiva server_tokens cargada, no cualquiera,
+        // y el nombre se compara sin distinguir mayúsculas.
+        let tokens_name = ci(r"^[[:space:]]*server_tokens[[:space:]]+");
+        let tokens_off = ci(r"^[[:space:]]*server_tokens[[:space:]]+off\b");
+        if last_directive(ctx, "/etc/nginx", &tokens_name).is_some_and(|(_, _, l)| tokens_off.is_match(&l)) {
             em.pass("APP-052", Low, "nginx: server_tokens off");
+        } else {
+            em.warn("APP-052", Low, tr!("nginx exposes its version (server_tokens)")).with_detail("/etc/nginx").with_fix("server_tokens off;");
         }
-        let auto = Regex::new(r"^[[:space:]]*autoindex[[:space:]]+on").expect("regex válida");
+        let auto = ci(r"^[[:space:]]*autoindex[[:space:]]+on");
         let x = grep_tree(ctx, "/etc/nginx", &auto, None, 5);
         if x.is_empty() {
             em.pass("APP-053", Medium, tr!("nginx: no autoindex"));
@@ -530,5 +550,59 @@ mod tests {
         assert!(!r.contains_key("APP-050"), "sin apache2.conf no hay Apache");
         assert!(!r.contains_key("APP-051"));
         assert_eq!(r["APP-000"].title, "Aplicaciones detectadas: ninguna");
+    }
+
+    #[test]
+    fn apache_servertokens_ultima_gana() {
+        // Prod primero, Full después: la última directiva manda, así que expone la versión.
+        // En un solo archivo el orden de línea es determinista (el recorrido entre
+        // archivos depende del sistema de archivos).
+        let f = Fixture::new();
+        f.file("/etc/apache2/apache2.conf", "ServerTokens Prod\nServerTokens Full\n");
+        assert_eq!(f.run(run)["APP-050"].status, Status::Warn, "una Full posterior anula a Prod");
+    }
+
+    #[test]
+    fn apache_servertokens_no_distingue_mayusculas() {
+        // El nombre de directiva de Apache es case-insensitive: 'servertokens prod' es seguro.
+        let f = Fixture::new();
+        f.file("/etc/apache2/apache2.conf", "servertokens prod\n");
+        assert_eq!(f.run(run)["APP-050"].status, Status::Pass);
+    }
+
+    #[test]
+    fn nginx_server_tokens_ultima_gana() {
+        // off primero, on después: la última gana, así que expone la versión.
+        let f = Fixture::new();
+        f.file("/etc/nginx/nginx.conf", "http {\n\tserver_tokens off;\n\tserver {\n\t\tserver_tokens on;\n\t}\n}\n");
+        assert_eq!(f.run(run)["APP-052"].status, Status::Warn, "un on posterior anula a off");
+    }
+
+    #[test]
+    fn tree_files_orden_determinista() {
+        // read_dir no garantiza orden; tree_files debe devolver las rutas ordenadas
+        // para que el "último" entre archivos no dependa del sistema de archivos.
+        let f = Fixture::new();
+        f.file("/r/b.conf", "x").file("/r/a.conf", "x").file("/r/sub/c.conf", "x");
+        let ctx = f.ctx();
+        let mut esperado = tree_files(&ctx, "/r");
+        let obtenido = esperado.clone();
+        esperado.sort();
+        assert_eq!(obtenido, esperado, "tree_files devuelve rutas ordenadas");
+    }
+
+    #[test]
+    fn apache_servertokens_ultima_gana_entre_archivos() {
+        // Directivas en conflicto en archivos separados: Prod en apache2.conf y Full en
+        // un conf-available posterior en orden de ruta. El veredicto es determinista
+        // (gana la ruta que ordena última), no depende del orden del sistema de archivos.
+        let f = Fixture::new();
+        f.file("/etc/apache2/apache2.conf", "ServerTokens Prod\n")
+            .file("/etc/apache2/conf-available/z-override.conf", "ServerTokens Full\n");
+        assert_eq!(
+            f.run(run)["APP-050"].status,
+            Status::Warn,
+            "la Full del archivo que ordena último anula a la Prod anterior"
+        );
     }
 }
