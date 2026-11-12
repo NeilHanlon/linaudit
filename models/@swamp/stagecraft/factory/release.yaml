@@ -1,0 +1,696 @@
+type: '@swamp/stagecraft/factory'
+typeVersion: 2026.11.05.2
+id: 90a2d714-a4eb-44de-af64-db889f16374e
+name: release
+version: 1
+tags: {}
+globalArguments:
+  tracker: tracker
+  definition:
+    schemaVersion: 5
+    description: |-
+      The linaudit release cycle, soup to nuts: an incoming change (often an
+      outside PR) is triaged, planned, implemented with security hardening,
+      verified against the project's checks, reviewed by an adversarial
+      reviewer and a security reviewer, then released through the normal GitHub
+      pull-request flow.
+
+      For: changes to the linaudit codebase, especially pull requests collected
+      from outside contributors. A person approves intake, gives a go/no-go
+      after review, approves the release, and confirms abandoning the work. An
+      open blocking finding from either review, or a failed verify, sends the
+      work back. Every check, review and release is bound to the commit named
+      in change-summary. Stages name tracker status keys, so a work item drives
+      a ticket on the built-in local tracker.
+
+      Operational guard (while assisting, pre-handoff to the owner): this
+      definition MODELS the full GitHub PR-and-release flow, but until the
+      repository owner has approved this factory, the agent driving a work item
+      must NOT touch the real alexiarstein/linaudit repo on GitHub - no issues,
+      comments, pushes, PRs, merges or tags against the remote. All work stays
+      in the local clone; the release stage records what WOULD ship.
+
+    stages:
+      - id: intake
+        initial: true
+        tracker:
+          status: open
+          duplicate:
+            on: { approve: duplicate-confirmation }
+            record: duplicate-of
+            field: primary
+        description: >-
+          Triage the incoming change (an outside PR, an internal change, or a
+          finding from a security/audit report) and decide whether to take it
+          into the release cycle. A person signs off before any work begins.
+        work:
+          mode: interactive
+          skills: []
+          systemPrompt: |
+            First, check the work is not a duplicate of another ticket. If it
+            is, find out whether that ticket, the primary, already has a work
+            item: run the tracker's claim on it with dryRun=true, which writes
+            nothing. Record duplicate-of with the primary's stable id, its
+            display id and why, and wait for a person to approve
+            duplicate-confirmation; do not triage. Once it is approved, move the
+            work to the primary. When the primary has no work item, retarget
+            this work item onto the primary's externalRefs and publish at once,
+            then triage the primary's work here. When it has one, take the
+            duplicate exit.
+
+            Triage the incoming change. If it is an outside pull request, fetch
+            it into the LOCAL clone as a branch for inspection ONLY - never push,
+            comment on, or alter anything on the GitHub remote. Read what the
+            change touches. Record intake with: the source (external-pr,
+            internal-change or upstream-report), a ref (the PR URL, branch or
+            report id), a short summary of what it does, the areas of the
+            codebase it affects, and a risk read. Then wait for a person to
+            approve intake-approval before the work is planned.
+          context:
+            inject: [intake, duplicate-of]
+            optional: [intake, duplicate-of]
+        artifacts:
+          - name: intake
+            schema:
+              type: object
+              required: [source, ref, summary, scope, risk]
+              additionalProperties: false
+              properties:
+                source: { enum: [external-pr, internal-change, upstream-report] }
+                ref: { type: string, minLength: 1 }
+                summary: { type: string, minLength: 1 }
+                scope:
+                  type: array
+                  minItems: 1
+                  items: { type: string, minLength: 1 }
+                risk: { enum: [low, medium, high] }
+          - name: duplicate-of
+            schema:
+              type: object
+              required: [primary, display, reason]
+              additionalProperties: false
+              properties:
+                primary:
+                  description: The primary ticket's stable id.
+                  type: string
+                  minLength: 1
+                display:
+                  description: The primary ticket's display id.
+                  type: string
+                  minLength: 1
+                reason: { type: string, minLength: 1 }
+        transitions:
+          - name: accept
+            to: plan
+            description: Intake is recorded and a person approved taking the work.
+            gates:
+              - type: artifact-exists
+                config: { artifact: intake }
+              - type: human-approval
+                config: { id: intake-approval }
+          - name: duplicate
+            to: duplicate
+            description: >-
+              The work duplicates a primary ticket that already has a work item;
+              a person confirms it. When the primary has none, the work item is
+              retargeted onto it instead, and the cel gate closes this exit to
+              it. "builtin" there is the built-in tracker's externalRefs key.
+            gates:
+              - type: human-approval
+                config: { id: duplicate-confirmation }
+              - type: cel
+                config:
+                  expr: >-
+                    "duplicate-of" in artifacts &&
+                    (!("builtin" in item.externalRefs) ||
+                    item.externalRefs["builtin"] !=
+                    artifacts["duplicate-of"].payload.primary)
+                  message: >-
+                    this work item is on the primary ticket now; plan it here
+
+      - id: plan
+        tracker: { status: open }
+        maxCycles: 4
+        description: Plan the change and its security hardening.
+        work:
+          mode: interactive
+          skills: []
+          systemPrompt: |
+            Plan the change with the person. Read the code it touches first, and
+            the injected intake (what came in and its risk). Plan not just the
+            functional change but the security hardening it should carry: input
+            validation, safe filesystem/subprocess handling, avoiding false
+            audit verdicts, and anything the reviews are likely to raise. Record
+            plan with a summary, the steps in order (each naming the files it
+            touches) and the testing strategy.
+
+            On a later plan, read the injected plan (the last one), plan-review
+            (its review) and plan-feedback (the person's latest feedback); the
+            first plan has none of them. After a review sends the plan back,
+            address its findings. After revise, address the feedback. Record
+            feedbackIncorporated as the last plan's list, adding the feedback
+            word for word unless it is already the list's last entry.
+          context:
+            inject: [intake, plan, plan-review, plan-feedback]
+            optional: [plan, plan-review, plan-feedback]
+        artifacts:
+          - name: plan
+            schema:
+              type: object
+              required: [summary, steps, testingStrategy]
+              properties:
+                summary: { type: string, minLength: 1 }
+                steps:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required: [description, files]
+                    additionalProperties: false
+                    properties:
+                      description: { type: string, minLength: 1 }
+                      files: {
+                        type: array,
+                        items: { type: string, minLength: 1 },
+                      }
+                testingStrategy: { type: string, minLength: 1 }
+                feedbackIncorporated:
+                  description: >-
+                    Every round of a person's plan feedback this plan answers,
+                    oldest first.
+                  type: array
+                  items: { type: string, minLength: 1 }
+        transitions:
+          - name: submit
+            to: plan-review
+            gates:
+              - type: artifact-exists
+                config: { artifact: plan }
+
+      - id: plan-review
+        tracker: { status: open }
+        description: >-
+          Adversarial review of the current plan. Open blocking findings send it
+          back; none lets it through. With nothing blocking, the plan proceeds
+          to implement, which receives plan-review; revise is for when the
+          person wants the plan itself changed and reviewed again.
+        work:
+          mode: dispatch
+          skills: []
+          systemPrompt: |
+            You are an adversarial reviewer. Try to refute this plan:
+            {{planSummary}}
+            Check its steps against the code it touches and its testing strategy
+            against the risks, including the security risks the intake flagged.
+            Rate a finding critical or high only if the plan would ship a
+            defect, lose data, break a stated rule, introduce a security
+            weakness, or make the declared checks meaningless. Gaps in process,
+            logistics or manual verification that the automated checks already
+            cover are medium at most. Judge the plan against the size of the
+            change: do not ask for verification machinery bigger than the
+            change, and give the smallest adequate fix for each finding. Report
+            findings with severities, and do not soften the severity of a real
+            defect.
+          let:
+            planSummary: artifacts["plan"].payload.summary
+          context:
+            inject: [intake, plan]
+        artifacts:
+          - name: plan-review
+            kind: findings
+            reviews: plan
+        evidence:
+          - name: plan-feedback
+            description: >-
+              A person's feedback on the plan, in their words; revise needs it.
+              The round is the cycle it was recorded in.
+            recordedBy: person
+            schema:
+              type: object
+              required: [feedback]
+              additionalProperties: false
+              properties:
+                feedback: { type: string, minLength: 1 }
+        transitions:
+          - name: approve
+            to: implement
+            gates:
+              - type: artifact-fresh
+                config: { artifact: plan-review, recordedThisCycle: true }
+              - type: findings-clear
+                config: { artifact: plan-review, blocking: [critical, high] }
+          - name: rework
+            to: plan
+            description: >-
+              The fresh plan review has an open critical or high finding, so the
+              plan goes back to be fixed.
+            gates:
+              - type: artifact-fresh
+                config: { artifact: plan-review, recordedThisCycle: true }
+              - type: findings-open
+                config: { artifact: plan-review, blocking: [critical, high] }
+          - name: revise
+            to: plan
+            manual: true
+            description: >-
+              A person sent the plan back without a blocking finding, to change
+              the plan itself and have it reviewed again. To act on non-blocking
+              findings during implement, approve instead. Manual, so it never
+              fires on its own, and the person's feedback is recorded first, so
+              every revision carries its reason to the next plan.
+            gates:
+              - type: evidence-recorded
+                description: The person's feedback on this plan is recorded.
+                config: { name: plan-feedback }
+
+      - id: implement
+        tracker: { status: in_progress }
+        maxCycles: 6
+        description: Implement the plan with its hardening and commit it.
+        work:
+          mode: interactive
+          skills: []
+          systemPrompt: |
+            Implement the plan, including the security hardening it calls for.
+            Commit the work in the LOCAL clone, then record change-summary with
+            the full 40-character SHA of the commit to check and review. Do NOT
+            open a pull request or push to the GitHub remote. After a check or
+            review sends the work back, read the injected findings
+            (plan-review, and when present code-review and security-review),
+            fix them, commit, and record change-summary again for the new
+            commit.
+          context:
+            inject: [intake, plan, plan-review, code-review, security-review]
+            optional: [code-review, security-review]
+        artifacts:
+          - name: change-summary
+            schema:
+              type: object
+              required: [summary, commit, files]
+              properties:
+                summary: { type: string, minLength: 1 }
+                commit: { type: string, pattern: "^[0-9a-f]{40}$" }
+                files: { type: array, minItems: 1, items: { type: string } }
+        transitions:
+          - name: submit
+            to: verify
+            gates:
+              - type: artifact-exists
+                config: { artifact: change-summary }
+
+      - id: verify
+        tracker: { status: in_progress }
+        description: >-
+          Run the project's checks on the change-summary commit and record
+          checks, with one result per check.
+        work:
+          mode: interactive
+          systemPrompt: |
+            Check out commit {{commit}} in the local clone and run the stage's
+            command (the Rust format, lint, test and build checks). Record
+            checks with that commit, the overall status, and one result per
+            check (its name, status and, when it failed, the output that shows
+            why). Record only what you ran and saw.
+          command: >-
+            cargo fmt --all -- --check; cargo clippy --all-targets
+            --all-features -- -D warnings; cargo test --all; cargo build
+            --release; cargo audit (if installed)
+          let:
+            commit: artifacts["change-summary"].payload.commit
+        evidence:
+          - name: checks
+            schema:
+              type: object
+              required: [commit, status, results]
+              properties:
+                commit: { type: string, pattern: "^[0-9a-f]{40}$" }
+                status: { enum: [passed, failed] }
+                results:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required: [name, status]
+                    additionalProperties: false
+                    properties:
+                      name: { type: string, minLength: 1 }
+                      status: { enum: [passed, failed, skipped] }
+                      detail: { type: string }
+              $comment: An overall pass cannot contain a failed result.
+              if:
+                properties: { status: { const: passed } }
+              then:
+                properties:
+                  results:
+                    not:
+                      contains:
+                        properties: { status: { const: failed } }
+        transitions:
+          - name: passed
+            to: code-review
+            gates:
+              - type: evidence-recorded
+                config: { name: checks, requireField: { status: passed } }
+              - type: cel
+                config:
+                  expr: >-
+                    evidence["checks"].payload.commit ==
+                    artifacts["change-summary"].payload.commit
+                  message: checks must be for the change-summary commit
+          - name: failed
+            to: implement
+            description: >-
+              The checks failed, so the change goes back to be fixed.
+            gates:
+              - type: evidence-recorded
+                config: { name: checks, requireField: { status: failed } }
+
+      - id: code-review
+        tracker: { status: in_progress }
+        description: >-
+          Adversarial review of the change for correctness. Open blocking
+          findings send it back; none lets it through to the security review.
+        work:
+          mode: dispatch
+          skills: [code-review]
+          systemPrompt: |
+            You are an adversarial reviewer. Review commit {{commit}}:
+            {{changeSummary}}
+            Check it against the plan and the intake. For an audit tool like
+            linaudit, pay special attention to correctness of the audit
+            verdicts: conditions that produce false passes (an insecure config
+            scored secure) or false fails, fragile config parsing, and error
+            handling that swallows failures and reports a pass.
+            Rate a finding critical or high only if the change would ship a
+            defect, lose data, break a stated rule, produce a wrong audit
+            verdict, or make the declared checks meaningless. Gaps in process,
+            logistics or manual verification that the automated checks already
+            cover are medium at most. Judge the change against its size: do not
+            ask for verification machinery bigger than the change, and give the
+            smallest adequate fix for each finding. Report findings with
+            severities, and do not soften the severity of a real defect.
+          let:
+            commit: artifacts["change-summary"].payload.commit
+            changeSummary: artifacts["change-summary"].payload.summary
+          context:
+            inject: [intake, plan, change-summary]
+        artifacts:
+          - name: code-review
+            kind: findings
+            reviews: change-summary
+        transitions:
+          - name: accept
+            to: security-review
+            gates:
+              - type: artifact-fresh
+                config: { artifact: code-review, recordedThisCycle: true }
+              - type: findings-clear
+                config: { artifact: code-review, blocking: [critical, high] }
+          - name: rework
+            to: implement
+            description: >-
+              The fresh code review has an open critical or high finding, so the
+              change goes back to be fixed.
+            gates:
+              - type: artifact-fresh
+                config: { artifact: code-review, recordedThisCycle: true }
+              - type: findings-open
+                config: { artifact: code-review, blocking: [critical, high] }
+          - name: revise
+            to: implement
+            manual: true
+            description: >-
+              A person sent the change back without a blocking finding. Manual,
+              so it never fires on its own.
+
+      - id: security-review
+        tracker: { status: in_progress }
+        description: >-
+          Security and hardening review of the change. Open blocking findings
+          send it back; none, plus a person's go/no-go, lets it through to
+          release.
+        work:
+          mode: dispatch
+          skills: [security-review]
+          systemPrompt: |
+            You are a security reviewer. Review commit {{commit}}:
+            {{changeSummary}}
+            against the plan and the intake. linaudit runs with elevated
+            privileges to audit a system, so weigh: command injection or unsafe
+            subprocess use, path traversal / symlink-following / TOCTOU in
+            filesystem handling, unsafe parsing of untrusted system files,
+            privilege assumptions, unsafe Rust, panics on malformed input (DoS),
+            whether any discovered secret value could be logged or leaked, and
+            dependency risk.
+            Rate a finding critical or high only if it is an exploitable or
+            data-exposing weakness, or a hardening regression that undoes an
+            existing control. Defense-in-depth suggestions that do not change
+            the real risk are medium at most. Judge the change against its size
+            and give the smallest adequate fix for each finding. Report findings
+            with severities, and do not soften the severity of a real weakness.
+          let:
+            commit: artifacts["change-summary"].payload.commit
+            changeSummary: artifacts["change-summary"].payload.summary
+          context:
+            inject: [intake, plan, change-summary]
+        artifacts:
+          - name: security-review
+            kind: findings
+            reviews: change-summary
+        transitions:
+          - name: accept
+            to: release
+            description: >-
+              Both reviews are clear of blocking findings and a person gave the
+              go-ahead (go/no-go) to head to release.
+            gates:
+              - type: artifact-fresh
+                config: { artifact: security-review, recordedThisCycle: true }
+              - type: findings-clear
+                config: { artifact: security-review, blocking: [critical, high] }
+              - type: human-approval
+                config: { id: go-no-go }
+          - name: rework
+            to: implement
+            description: >-
+              The fresh security review has an open critical or high finding, so
+              the change goes back to be fixed.
+            gates:
+              - type: artifact-fresh
+                config: { artifact: security-review, recordedThisCycle: true }
+              - type: findings-open
+                config: { artifact: security-review, blocking: [critical, high] }
+          - name: revise
+            to: implement
+            manual: true
+            description: >-
+              A person sent the change back without a blocking finding. Manual,
+              so it never fires on its own.
+
+      - id: release
+        tracker: { status: in_progress }
+        description: >-
+          Release the reviewed commit through the normal GitHub pull-request
+          flow, after a person approves the release. OPERATIONAL GUARD: until
+          the repo owner has approved this factory, do not touch the GitHub
+          remote - record what would ship instead.
+        work:
+          mode: interactive
+          systemPrompt: |
+            Release the reviewed commit {{commit}} through the normal GitHub
+            pull-request flow: open the PR from the change branch, let the
+            owner's merge land it, then tag/cut the release.
+
+            OPERATIONAL GUARD: until the repository owner has explicitly
+            approved this factory and lifted the no-touch rule for this repo, do
+            NOT perform any action against the real alexiarstein/linaudit GitHub
+            remote - no push, PR, merge or tag. In that mode, prepare everything
+            locally and record release with the commit that would ship and the
+            URL it would ship to (the intended PR/release URL), and say in the
+            summary that it was prepared, not shipped. Only perform the real
+            remote actions once a person has approved release-approval AND the
+            guard is lifted.
+          let:
+            commit: artifacts["change-summary"].payload.commit
+        evidence:
+          - name: release
+            schema:
+              type: object
+              required: [commit, url]
+              properties:
+                commit: { type: string, pattern: "^[0-9a-f]{40}$" }
+                url: { type: string, format: uri }
+        transitions:
+          - name: released
+            to: done
+            description: >-
+              A person approved the release and the release is recorded.
+            gates:
+              - type: human-approval
+                config: { id: release-approval }
+              - type: evidence-recorded
+                config: { name: release }
+          - name: rework
+            to: implement
+            manual: true
+            description: The release was blocked; go back and change the work.
+
+      - id: done
+        terminal: true
+        tracker: { status: shipped }
+
+      - id: duplicate
+        terminal: true
+        description: >-
+          The work duplicated a primary ticket that has its own work item.
+        tracker: { status: closed }
+
+      - id: abandoned
+        terminal: true
+        tracker: { status: closed }
+
+    globalTransitions:
+      - name: abandon
+        to: abandoned
+        gates:
+          - type: human-approval
+            config: { id: abandon-confirmation }
+  scenarios:
+    - scenario: intake-approval-gate
+      description: >-
+        Intake is recorded but accept is refused until a person approves
+        intake-approval; once approved, the work moves to plan.
+      steps:
+        - record: { artifact: intake }
+          payload:
+            source: external-pr
+            ref: https://github.com/alexiarstein/linaudit/pull/1
+            summary: Harden the --output file write against symlink following
+            scope: [crates/linaudit/src/main.rs]
+            risk: medium
+        - move: accept
+          expect: { refused: "intake-approval" }
+        - approve: intake-approval
+        - move: accept
+        - expect: { stage: plan }
+    - scenario: intake-to-done
+      description: >-
+        A change walks from intake to done through the real gates, with a
+        blocking security-review finding that sends it back to implement, then
+        a clean pass, a go/no-go and a release approval.
+      steps:
+        - record: { artifact: intake }
+          payload:
+            source: external-pr
+            ref: https://github.com/alexiarstein/linaudit/pull/1
+            summary: Harden the --output file write against symlink following
+            scope: [crates/linaudit/src/main.rs]
+            risk: medium
+        - approve: intake-approval
+        - move: accept
+        - record: { artifact: plan }
+          payload:
+            summary: Open --output with O_NOFOLLOW and refuse symlinks
+            steps:
+              - { description: Add O_NOFOLLOW guard, files: [crates/linaudit/src/main.rs] }
+            testingStrategy: Unit test the symlink-refusal path
+        - move: submit
+        - record: { artifact: plan-review }
+          payload: { findings: [] }
+        - move: approve
+        - expect: { stage: implement }
+        - record: { artifact: change-summary }
+          payload:
+            summary: Guarded --output write
+            commit: c5aaad329c9ceb4edc0504a98ff5d6e5528ac8fd
+            files: [crates/linaudit/src/main.rs]
+        - move: submit
+        - record: { evidence: checks }
+          payload:
+            commit: c5aaad329c9ceb4edc0504a98ff5d6e5528ac8fd
+            status: passed
+            results: [{ name: test, status: passed }]
+        - move: passed
+        - record: { artifact: code-review }
+          payload: { findings: [] }
+        - move: accept
+        - expect: { stage: security-review }
+        - record: { artifact: security-review }
+          payload: {
+            findings: [{ id: S1, severity: high, description: Still follows symlink on parent dir }],
+          }
+        - move: accept
+          expect: { refused: "unresolved blocking finding" }
+        - move: rework
+        - expect: { stage: implement }
+        - record: { artifact: change-summary }
+          payload:
+            summary: Guarded --output write and parent dir
+            commit: d6bbbe43ad0dfc5fce1615b09ff6e6f6639bd9ae
+            files: [crates/linaudit/src/main.rs]
+        - move: submit
+        - record: { evidence: checks }
+          payload:
+            commit: d6bbbe43ad0dfc5fce1615b09ff6e6f6639bd9ae
+            status: passed
+            results: [{ name: test, status: passed }]
+        - move: passed
+        - record: { artifact: code-review }
+          payload: { findings: [] }
+        - move: accept
+        - record: { artifact: security-review }
+          payload: { findings: [] }
+        - move: accept
+          expect: { refused: "go-no-go" }
+        - approve: go-no-go
+        - move: accept
+        - expect: { stage: release }
+        - move: released
+          expect: { refused: "release-approval" }
+        - approve: release-approval
+        - record: { evidence: release }
+          payload:
+            commit: d6bbbe43ad0dfc5fce1615b09ff6e6f6639bd9ae
+            url: https://github.com/alexiarstein/linaudit/pull/1
+        - move: released
+        - expect: { stage: done }
+    - scenario: plan-feedback
+      description: >-
+        A person declines the plan without a blocking finding and sends it back
+        with feedback. revise is refused until the feedback is recorded, and the
+        next plan lists the feedback it answers.
+      steps:
+        - record: { artifact: intake }
+          payload:
+            source: internal-change
+            ref: hardening/umask-check
+            summary: Fix HRD-016 umask leading-zero false positive
+            scope: [crates/linaudit-core/src/checks/hardening.rs]
+            risk: low
+        - approve: intake-approval
+        - move: accept
+        - record: { artifact: plan }
+          payload:
+            summary: Parse umask numerically
+            steps: [{ description: Parse octal, files: [crates/linaudit-core/src/checks/hardening.rs] }]
+            testingStrategy: Unit tests
+        - move: submit
+        - record: { artifact: plan-review }
+          payload: { findings: [] }
+        - move: revise
+          manual: true
+          expect: { refused: "evidence 'plan-feedback' has not been recorded" }
+        - record: { evidence: plan-feedback }
+          payload: { feedback: Cover 4-digit umasks like 0027 explicitly }
+        - move: revise
+          manual: true
+        - expect: { stage: plan }
+        - record: { artifact: plan }
+          payload:
+            summary: Parse umask numerically, covering 4-digit forms
+            steps: [{ description: Parse octal numerically, files: [crates/linaudit-core/src/checks/hardening.rs] }]
+            testingStrategy: Unit tests including 0027 and 027
+            feedbackIncorporated:
+              - Cover 4-digit umasks like 0027 explicitly
+        - move: submit
+        - expect: { stage: plan-review }

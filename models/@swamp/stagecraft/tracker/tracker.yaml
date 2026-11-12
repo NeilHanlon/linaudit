@@ -1,0 +1,9 @@
+type: '@swamp/stagecraft/tracker'
+typeVersion: 2026.11.05.1
+id: e7297eaf-ece1-4fcb-82fd-350c7c613129
+name: tracker
+version: 1
+tags: {}
+globalArguments:
+  prefix: release
+methods: {}
