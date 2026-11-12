@@ -58,11 +58,12 @@ El título es el del caso "cumple"; cuando falla, el reporte muestra el detalle 
 | FS-011 | HIGH | Sin capabilities peligrosas en binarios |
 | FS-012 | HIGH | Sin SUID/SGID en tmp, home, www |
 | FS-013 | CRITICAL | Sin SUID en binarios peligrosos (GTFOBins) |
-| FS-014 | HIGH | Todos los SUID/SGID pertenecen a paquetes (${#sugid[@]} revisados) |
+| FS-014 | HIGH | Todos los SUID/SGID pertenecen a paquetes |
 | FS-015 | HIGH | Sin archivos world-writable en rutas del sistema |
 | FS-016 | MEDIUM | Sin archivos world-writable fuera del sistema |
 | FS-017 | MEDIUM | Directorios world-writable con sticky bit |
 | FS-018 | MEDIUM | Sin archivos huérfanos (sin dueño/grupo) |
+| FS-019 | MEDIUM | Snapshots de backup (/timeshift, /.snapshots) no accesibles para otros usuarios |
 
 ## secrets
 

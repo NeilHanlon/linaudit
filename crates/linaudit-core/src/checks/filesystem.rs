@@ -142,8 +142,39 @@ fn owned_by_dpkg(index: &HashSet<String>, p: &str) -> bool {
     ["/bin/", "/sbin/", "/lib"].iter().any(|d| p.starts_with(d)) && index.contains(&format!("/usr{p}"))
 }
 
+/// Raíces de snapshots de backup (Timeshift rsync/btrfs, snapper): copias del sistema que el barrido
+/// completo no recorre (FS-014..018 darían un hallazgo por cada copia) y que FS-019 controla aparte.
+const SNAPSHOT_ROOTS: &[&str] = &["/timeshift", "/timeshift-btrfs", "/.snapshots"];
+
 fn short(v: &[String]) -> String {
     v.iter().take(8).cloned().collect::<Vec<_>>().join(" ")
+}
+
+/// FS-018: agrupa cada archivo huérfano bajo el directorio huérfano más alto que lo contiene, para que
+/// un volumen de contenedor (miles de archivos con el uid de la imagen) se lea como una sola línea.
+fn group_orphans(orphan: &[(String, u32, u32)]) -> Vec<String> {
+    use std::collections::BTreeMap;
+    let set: HashSet<&str> = orphan.iter().map(|(p, ..)| p.as_str()).collect();
+    let owner: std::collections::HashMap<&str, (u32, u32)> = orphan.iter().map(|(p, u, g)| (p.as_str(), (*u, *g))).collect();
+    let mut groups: BTreeMap<&str, usize> = BTreeMap::new();
+    for (p, ..) in orphan {
+        let mut top = p.as_str();
+        while let Some((parent, _)) = top.rsplit_once('/') {
+            if parent.is_empty() || !set.contains(parent) {
+                break;
+            }
+            top = parent;
+        }
+        *groups.entry(top).or_default() += 1;
+    }
+    let mut v: Vec<(&str, usize)> = groups.into_iter().collect();
+    v.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(b.0)));
+    v.into_iter()
+        .map(|(p, n)| {
+            let (uid, gid) = owner[p];
+            if n == 1 { format!("{p}({uid}:{gid})") } else { tr!("{path}({uid}:{gid}, {n} entries)", path = p, uid = uid, gid = gid, n = n) }
+        })
+        .collect()
 }
 
 pub fn run(ctx: &Context, em: &mut Emitter) {
@@ -237,6 +268,25 @@ pub fn run(ctx: &Context, em: &mut Emitter) {
             .with_fix(tr!("Investigate: a typical persistence/escalation technique"));
     }
 
+    // FS-019: snapshots de backup accesibles por otros usuarios (copias viejas de SUID, /etc/shadow, ...)
+    let snaps: Vec<(&str, u32)> = SNAPSHOT_ROOTS
+        .iter()
+        .filter_map(|r| {
+            let m = std::fs::symlink_metadata(ctx.path(r)).ok()?;
+            m.is_dir().then_some((*r, m.mode() & 0o7777))
+        })
+        .collect();
+    let open: Vec<String> = snaps.iter().filter(|(_, m)| m & 0o001 != 0).map(|(r, m)| format!("{r}({m:o})")).collect();
+    if snaps.is_empty() {
+        em.na("FS-019", Medium, tr!("Backup snapshots not accessible to other users")).with_detail(tr!("no snapshot directories"));
+    } else if open.is_empty() {
+        em.pass("FS-019", Medium, tr!("Backup snapshots not accessible to other users"));
+    } else {
+        em.fail("FS-019", Medium, tr!("Backup snapshots accessible to other users"))
+            .with_detail(open.join(" "))
+            .with_fix(tr!("chmod 700 <dir>: old SUID binaries and copies of /etc stay usable inside the snapshot"));
+    }
+
     if ctx.fast {
         for (id, sev, title) in [
             ("FS-013", Critical, tr!("Dangerous SUID (GTFOBins)")),
@@ -260,6 +310,7 @@ fn full_scan(ctx: &Context, em: &mut Emitter, all: &[Mount], passwd: &[super::ut
         "/var/lib/docker", "/var/lib/containers", "/var/lib/kubelet", "/var/lib/containerd", "/proc", "/sys", "/run",
         "/tmp", "/var/tmp", "/dev/shm",
     ];
+    let prune = |p: &str| PRUNE.contains(&p) || SNAPSHOT_ROOTS.contains(&p);
     let mut roots: Vec<String> = all.iter().filter(|m| LOCAL.contains(&m.fstype.as_str())).map(|m| m.target.clone()).collect();
     if roots.is_empty() {
         roots.push("/".into());
@@ -275,7 +326,6 @@ fn full_scan(ctx: &Context, em: &mut Emitter, all: &[Mount], passwd: &[super::ut
 
     let (mut wwsys, mut wwoth, mut wwdir, mut orphan, mut sugid) = (Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new());
     let mut seen = HashSet::new();
-    let prune = |p: &str| PRUNE.contains(&p);
     for root in &roots {
         let opts = WalkOpts { xdev: true, prune: Some(&prune), deadline: Some(Instant::now() + scan_timeout()), ..Default::default() };
         walk(ctx, root, &opts, &mut |e| {
@@ -290,7 +340,7 @@ fn full_scan(ctx: &Context, em: &mut Emitter, all: &[Mount], passwd: &[super::ut
             }
             let p = e.path.to_string();
             if orphaned {
-                orphan.push(p.clone());
+                orphan.push((p.clone(), e.meta.uid(), e.meta.gid()));
             }
             if ww_file && !p.contains("/.cache/") && !p.contains("/.local/share/") {
                 let system =
@@ -305,9 +355,10 @@ fn full_scan(ctx: &Context, em: &mut Emitter, all: &[Mount], passwd: &[super::ut
             }
         });
     }
-    for v in [&mut wwsys, &mut wwoth, &mut wwdir, &mut orphan] {
+    for v in [&mut wwsys, &mut wwoth, &mut wwdir] {
         v.sort();
     }
+    orphan.sort();
     sugid.sort_by(|a, b| a.1.cmp(&b.1));
 
     // FS-013: SUID en binarios que permiten escalar (GTFOBins)
@@ -323,7 +374,10 @@ fn full_scan(ctx: &Context, em: &mut Emitter, all: &[Mount], passwd: &[super::ut
     }
 
     // FS-014: SUID/SGID que no vienen de ningún paquete
-    let checked: Vec<&str> = sugid.iter().take(150).map(|(_, p)| p.as_str()).collect();
+    // Con el índice de dpkg revisar todos es barato; rpm -qf recibe las rutas como argumentos y se acota.
+    // Un tope fijo en Debian dejaba afuera rutas que ordenan tarde (/usr/...) si había muchas antes.
+    let limit = if ctx.os.family == OsFamily::Rhel { 150 } else { usize::MAX };
+    let checked: Vec<&str> = sugid.iter().take(limit).map(|(_, p)| p.as_str()).collect();
     let orphans: Option<Vec<String>> = match ctx.os.family {
         OsFamily::Debian => {
             let index = if checked.is_empty() { HashSet::new() } else { dpkg_files(ctx) };
@@ -352,7 +406,7 @@ fn full_scan(ctx: &Context, em: &mut Emitter, all: &[Mount], passwd: &[super::ut
             em.na("FS-014", High, tr!("SUID/SGID not provided by packages")).with_detail(tr!("unrecognized distro"));
         }
         Some(o) if o.is_empty() => {
-            em.pass("FS-014", High, &tr!("All SUID/SGID files belong to packages ({n} checked)", n = sugid.len()));
+            em.pass("FS-014", High, &tr!("All SUID/SGID files belong to packages ({n} checked)", n = checked.len()));
         }
         Some(o) => {
             em.fail("FS-014", High, tr!("SUID/SGID files that belong to no package"))
@@ -385,7 +439,7 @@ fn full_scan(ctx: &Context, em: &mut Emitter, all: &[Mount], passwd: &[super::ut
         em.pass("FS-018", Medium, tr!("No orphaned files (without owner/group)"));
     } else {
         em.warn("FS-018", Medium, &tr!("Files without an owner or group ({n})", n = orphan.len()))
-            .with_detail(short(&orphan))
+            .with_detail(short(&group_orphans(&orphan)))
             .with_fix(tr!("Assign a valid owner or delete them"));
     }
 }
@@ -470,7 +524,46 @@ mod tests {
             .mode("/srv/tmpcomun", 0o1777);
         let r = f.run(run);
         assert_eq!(r["FS-017"].status, Status::Pass, "{}", r["FS-017"].detail);
-        assert!(r["FS-018"].detail.contains("/srv/pg_data"));
+        assert!(r["FS-018"].detail.contains("/srv("), "pg_data queda agrupado bajo /srv: {}", r["FS-018"].detail);
+    }
+
+    #[test]
+    fn snapshots_fuera_del_barrido() {
+        let mut f = Fixture::new();
+        f.fast = false;
+        f.file("/marca", "");
+        let m = std::fs::metadata(f.ctx().path("/marca")).unwrap();
+        let (uid, gid) = (m.uid(), m.gid());
+        f.file("/etc/passwd", &format!("root:x:0:0::/root:/bin/bash\nyo:x:{uid}:{gid}::/home/yo:/bin/bash\n"))
+            .file("/etc/group", &format!("root:x:0:\nyo:x:{gid}:\n"))
+            .file("/var/lib/dpkg/info/login.list", "/usr/bin/chfn\n")
+            .file("/usr/bin/chfn", "")
+            .mode("/usr/bin/chfn", 0o4755)
+            .file("/usr/local/bin/rogue", "")
+            .mode("/usr/local/bin/rogue", 0o4755)
+            .dir("/timeshift")
+            .mode("/timeshift", 0o755);
+        // más copias que el viejo tope de 150, todas ordenadas antes que /usr
+        for i in 0..160 {
+            let p = format!("/timeshift/snapshots/{i:03}/localhost/usr/bin/chfn");
+            f.file(&p, "").mode(&p, 0o4755);
+        }
+        let r = f.run(run);
+        assert_eq!(r["FS-014"].detail, "/usr/local/bin/rogue");
+        assert_eq!(r["FS-019"].status, Status::Fail);
+        assert_eq!(r["FS-019"].detail, "/timeshift(755)");
+
+        f.mode("/timeshift", 0o700);
+        assert_eq!(f.run(run)["FS-019"].status, Status::Pass);
+    }
+
+    #[test]
+    fn huerfanos_agrupados_por_directorio() {
+        let o = |p: &str| (p.to_string(), 26, 26);
+        let mut v = vec![o("/h/pg_data"), o("/h/pg_data/base"), o("/h/pg_data/base/1"), o("/h/pg_data-old"), o("/srv/x")];
+        v.sort();
+        let g = group_orphans(&v);
+        assert_eq!(g, ["/h/pg_data(26:26, 3 entradas)", "/h/pg_data-old(26:26)", "/srv/x(26:26)"]);
     }
 
     #[test]

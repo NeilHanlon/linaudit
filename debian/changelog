@@ -11,6 +11,13 @@ linaudit (0.2.0-2) unstable; urgency=medium
     (GitHub #9).
   * Refuse to write --output to anything other than a regular file
     (symlink, FIFO, device, directory) (GitHub #8).
+  * FS-013..FS-018: skip backup snapshot trees (/timeshift, /timeshift-btrfs,
+    /.snapshots); new FS-019 checks that they are not accessible to other
+    users instead (GitHub #1).
+  * FS-014: check every SUID/SGID file against the dpkg index; the fixed limit
+    of 150 could leave /usr out when many paths sorted before it (GitHub #1).
+  * FS-018: group orphan files under their topmost orphan directory, showing
+    uid:gid and the number of entries (GitHub #1).
 
  -- Alexia Michelle <alexia@lexiworks.dev>  Wed, 11 Nov 2026 23:37:43 -0300
 

@@ -163,6 +163,11 @@ msgstr ""
 
 #: crates/linaudit/src/main.rs
 #. {name} is replaced by a value: keep it exactly as is
+msgid "{path} exists and is not a regular file (symlink, FIFO, socket, device or directory); refusing to write through it"
+msgstr ""
+
+#: crates/linaudit/src/main.rs
+#. {name} is replaced by a value: keep it exactly as is
 msgid "{score}/10 (incomplete evaluation)"
 msgstr ""
 
@@ -1285,6 +1290,11 @@ msgid "Add {opts} in /etc/fstab (or a systemd mount unit)"
 msgstr ""
 
 #: crates/linaudit-core/src/checks/filesystem.rs
+#. {name} is replaced by a value: keep it exactly as is
+msgid "{path}({uid}:{gid}, {n} entries)"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/filesystem.rs
 msgid "/etc/shadow permissions"
 msgstr ""
 
@@ -1358,6 +1368,22 @@ msgstr ""
 
 #: crates/linaudit-core/src/checks/filesystem.rs
 msgid "Investigate: a typical persistence/escalation technique"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Backup snapshots not accessible to other users"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "no snapshot directories"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Backup snapshots accessible to other users"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "chmod 700 <dir>: old SUID binaries and copies of /etc stay usable inside the snapshot"
 msgstr ""
 
 #: crates/linaudit-core/src/checks/filesystem.rs

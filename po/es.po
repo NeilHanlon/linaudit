@@ -143,11 +143,6 @@ msgstr "no existe el archivo de excepciones {path}"
 
 #. {name} is replaced by a value: keep it exactly as is
 #: crates/linaudit/src/main.rs
-msgid "{path} exists and is not a regular file (symlink, FIFO, socket, device or directory); refusing to write through it"
-msgstr "{path} existe y no es un archivo regular (symlink, FIFO, socket, dispositivo o directorio); se rechaza escribir a través de él"
-
-#. {name} is replaced by a value: keep it exactly as is
-#: crates/linaudit/src/main.rs
 msgid "interface: {e}"
 msgstr "interfaz: {e}"
 
@@ -173,6 +168,11 @@ msgstr "sin datos"
 #: crates/linaudit/src/main.rs
 msgid "Report saved to {path} (score {score})"
 msgstr "Reporte guardado en {path} (puntaje {score})"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit/src/main.rs
+msgid "{path} exists and is not a regular file (symlink, FIFO, socket, device or directory); refusing to write through it"
+msgstr "{path} existe y no es un archivo regular (symlink, FIFO, socket, dispositivo o directorio); se rechaza escribir a través de él"
 
 #. {name} is replaced by a value: keep it exactly as is
 #: crates/linaudit/src/main.rs
@@ -1300,6 +1300,11 @@ msgstr "faltan: {missing} (opciones actuales: {current})"
 msgid "Add {opts} in /etc/fstab (or a systemd mount unit)"
 msgstr "Agregar {opts} en /etc/fstab (o systemd mount unit)"
 
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "{path}({uid}:{gid}, {n} entries)"
+msgstr "{path}({uid}:{gid}, {n} entradas)"
+
 #: crates/linaudit-core/src/checks/filesystem.rs
 msgid "/etc/shadow permissions"
 msgstr "Permisos de /etc/shadow"
@@ -1375,6 +1380,22 @@ msgstr "SUID/SGID en ubicación inusual"
 #: crates/linaudit-core/src/checks/filesystem.rs
 msgid "Investigate: a typical persistence/escalation technique"
 msgstr "Investigar: es una técnica típica de persistencia/escalada"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Backup snapshots not accessible to other users"
+msgstr "Snapshots de backup no accesibles para otros usuarios"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "no snapshot directories"
+msgstr "no hay directorios de snapshots"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "Backup snapshots accessible to other users"
+msgstr "Snapshots de backup accesibles para otros usuarios"
+
+#: crates/linaudit-core/src/checks/filesystem.rs
+msgid "chmod 700 <dir>: old SUID binaries and copies of /etc stay usable inside the snapshot"
+msgstr "chmod 700 <dir>: los binarios SUID viejos y las copias de /etc siguen siendo usables dentro del snapshot"
 
 #: crates/linaudit-core/src/checks/filesystem.rs
 msgid "Dangerous SUID (GTFOBins)"
