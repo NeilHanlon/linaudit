@@ -130,6 +130,16 @@ pub fn read_config(ctx: &Context, abs: &str) -> ConfigRead {
     }
 }
 
+/// Un control cuya configuración está presente pero no se pudo leer queda
+/// indeterminado: Error, nunca PASS. Conserva el título propio del control y
+/// pone el motivo en el detalle, igual que ACC-002 ("cannot read ... (not root?)").
+pub fn unreadable<S: AsRef<str>>(em: &mut Emitter, id: &str, sev: Severity, title: &str, files: &[S]) {
+    let list = files.iter().map(AsRef::as_ref).collect::<Vec<_>>().join(" ");
+    em.error(id, sev, title)
+        .with_detail(tr!("cannot read {files} (not root?)", files = list))
+        .with_fix(tr!("Grant read access so the audit can evaluate this file"));
+}
+
 /// Valor de una clave en /etc/login.defs (gana la última aparición, como el awk de bash).
 pub fn login_defs_get(ctx: &Context, key: &str) -> Option<String> {
     let text = read(ctx, "/etc/login.defs")?;

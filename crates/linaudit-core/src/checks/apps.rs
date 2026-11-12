@@ -10,7 +10,7 @@ use std::sync::LazyLock;
 use regex::{Regex, RegexBuilder};
 
 use super::Context;
-use super::util::{ConfigRead, expand_all, find_command, live_command_full, read_config};
+use super::util::{ConfigRead, expand_all, find_command, live_command_full, read, read_config, unreadable};
 use super::walk::{WalkOpts, glob_match, walk};
 use crate::model::{Emitter, ResultExt, Severity::*};
 use crate::trc;
@@ -168,9 +168,7 @@ fn tomcat(ctx: &Context, em: &mut Emitter, procs: &[(String, String)], detected:
             .with_detail(ajp.join(" "))
             .with_fix(tr!("Disable AJP or set address=127.0.0.1 and a secret"));
     } else if !ajp_unread.is_empty() {
-        em.error("APP-001", High, tr!("Config file present but could not be read; check could not be evaluated"))
-            .with_detail(ajp_unread.join(" "))
-            .with_fix(tr!("Grant read access so the audit can evaluate this file"));
+        unreadable(em, "APP-001", High, tr!("Tomcat: AJP connector without a secret (Ghostcat)"), &ajp_unread);
     } else {
         em.pass("APP-001", High, tr!("Tomcat: no AJP connector without a secret"));
     }
@@ -179,9 +177,7 @@ fn tomcat(ctx: &Context, em: &mut Emitter, procs: &[(String, String)], detected:
             .with_detail(weak.join(" "))
             .with_fix(tr!("Change the password or remove the users"));
     } else if !users_unread.is_empty() {
-        em.error("APP-002", Critical, tr!("Config file present but could not be read; check could not be evaluated"))
-            .with_detail(users_unread.join(" "))
-            .with_fix(tr!("Grant read access so the audit can evaluate this file"));
+        unreadable(em, "APP-002", Critical, tr!("Tomcat: users with a default/trivial password"), &users_unread);
     } else {
         em.pass("APP-002", Critical, tr!("Tomcat: no default credentials in tomcat-users.xml"));
     }
@@ -190,9 +186,7 @@ fn tomcat(ctx: &Context, em: &mut Emitter, procs: &[(String, String)], detected:
             .with_detail(plain.join(" "))
             .with_fix(tr!("Use a CredentialHandler with a digest (SHA-256/bcrypt) in the Realm"));
     } else if !users_unread.is_empty() {
-        em.error("APP-003", Low, tr!("Config file present but could not be read; check could not be evaluated"))
-            .with_detail(users_unread.join(" "))
-            .with_fix(tr!("Grant read access so the audit can evaluate this file"));
+        unreadable(em, "APP-003", Low, tr!("Tomcat: plaintext passwords in tomcat-users.xml"), &users_unread);
     } else {
         em.pass("APP-003", Low, tr!("Tomcat: user passwords are not in plaintext"));
     }
@@ -244,11 +238,14 @@ fn redis(ctx: &Context, em: &mut Emitter, procs: &[(String, String)], detected: 
     let mut confs: Vec<String> = vec!["/etc/redis/redis.conf".into(), "/etc/redis.conf".into()];
     confs.extend(expand_all(ctx, &["/etc/redis/*.conf", "/usr/local/etc/redis/*.conf"]));
     // La presencia debe ser independiente del permiso de lectura: un redis.conf
-    // presente pero ilegible (EACCES) tiene que sobrevivir hasta read_config y
-    // forzar el camino Unreadable->Error. Con File::open().is_ok() un archivo sin
-    // permiso de lectura se descartaba antes de read_config y APP-010 (control
-    // critico) daba un PASS falso. try_exists solo depende del stat, no de leer.
-    confs.retain(|f| ctx.path(f).try_exists().unwrap_or(false));
+    // presente pero ilegible tiene que sobrevivir hasta read_config y forzar el
+    // camino Unreadable->Error, nunca un PASS falso en APP-010 (critico).
+    // try_exists().unwrap_or(false) no basta: en Debian /etc/redis es 0750
+    // redis:redis, asi que un no-root no puede ni hacer stat de redis.conf
+    // (EACCES por el directorio) y try_exists devuelve Err, que unwrap_or(false)
+    // convertia en "ausente", descartando el archivo. Se conserva la ruta salvo
+    // que este DEFINITIVAMENTE ausente (Ok(false)); Err (ilegible) se conserva.
+    confs.retain(|f| !matches!(ctx.path(f).try_exists(), Ok(false)));
     let mut seen = std::collections::HashSet::new();
     confs.retain(|f| seen.insert(f.clone()));
     let running = procs.iter().any(|(_, a)| a.contains("redis-server"));
@@ -273,9 +270,7 @@ fn redis(ctx: &Context, em: &mut Emitter, procs: &[(String, String)], detected: 
             .with_detail(exposed.join(" "))
             .with_fix(tr!("bind 127.0.0.1 or requirepass/ACL + firewall; never protected-mode no without a password"));
     } else if !unread.is_empty() {
-        em.error("APP-010", Critical, tr!("Config file present but could not be read; check could not be evaluated"))
-            .with_detail(unread.join(" "))
-            .with_fix(tr!("Grant read access so the audit can evaluate this file"));
+        unreadable(em, "APP-010", Critical, tr!("Redis exposed to the network WITHOUT authentication"), &unread);
     } else {
         em.pass("APP-010", Critical, tr!("Redis: no unauthenticated network exposure"));
     }
@@ -303,31 +298,22 @@ fn docker(ctx: &Context, em: &mut Emitter, detected: &mut Vec<&str>) {
             em.pass("APP-020", Critical, tr!("docker.sock is not world-writable"));
         }
     }
-    match read_config(ctx, "/etc/group") {
-        ConfigRead::Unreadable => {
-            em.error("APP-021", Low, tr!("Config file present but could not be read; check could not be evaluated"))
-                .with_detail("/etc/group")
-                .with_fix(tr!("Grant read access so the audit can evaluate this file"));
-        }
-        read => {
-            let text = match read {
-                ConfigRead::Content(t) => t,
-                _ => String::new(),
-            };
-            let members = text
-                .lines()
-                .find(|l| l.starts_with("docker:"))
-                .and_then(|l| l.split(':').nth(3))
-                .unwrap_or("")
-                .to_string();
-            if members.is_empty() {
-                em.pass("APP-021", Low, tr!("docker group has no members"));
-            } else {
-                em.warn("APP-021", Low, tr!("docker group members (equivalent to root)"))
-                    .with_detail(members)
-                    .with_fix(tr!("Keep it to a minimum; consider rootless Docker or scoped sudo"));
-            }
-        }
+    // /etc/group es legible por todos en cualquier sistema sano, asi que no se
+    // trata como "presente pero ilegible": se lee directamente (no es un control
+    // de configuracion sensible a permisos como los demas de este modulo).
+    let members = read(ctx, "/etc/group")
+        .unwrap_or_default()
+        .lines()
+        .find(|l| l.starts_with("docker:"))
+        .and_then(|l| l.split(':').nth(3))
+        .unwrap_or("")
+        .to_string();
+    if members.is_empty() {
+        em.pass("APP-021", Low, tr!("docker group has no members"));
+    } else {
+        em.warn("APP-021", Low, tr!("docker group members (equivalent to root)"))
+            .with_detail(members)
+            .with_fix(tr!("Keep it to a minimum; consider rootless Docker or scoped sudo"));
     }
     if !(ctx.root && have_docker) || !live_command_full(ctx, "docker", &["info"], &[]).is_some_and(|o| o.ok) {
         return;
@@ -398,9 +384,7 @@ fn postgres(ctx: &Context, em: &mut Emitter, detected: &mut Vec<&str>) {
     if !trust.is_empty() {
         em.fail("APP-030", High, tr!("PostgreSQL: pg_hba.conf allows 'trust' over the network")).with_detail(trust.join("; ")).with_fix(tr!("Use scram-sha-256"));
     } else if !unread.is_empty() {
-        em.error("APP-030", High, tr!("Config file present but could not be read; check could not be evaluated"))
-            .with_detail(unread.join(" "))
-            .with_fix(tr!("Grant read access so the audit can evaluate this file"));
+        unreadable(em, "APP-030", High, tr!("PostgreSQL: pg_hba.conf allows 'trust' over the network"), &unread);
     } else {
         em.pass("APP-030", High, tr!("PostgreSQL: no 'trust' for network connections"));
     }
@@ -409,9 +393,7 @@ fn postgres(ctx: &Context, em: &mut Emitter, detected: &mut Vec<&str>) {
             .with_detail(open.join(" "))
             .with_fix(tr!("Restrict to the application networks"));
     } else if !unread.is_empty() {
-        em.error("APP-031", Medium, tr!("Config file present but could not be read; check could not be evaluated"))
-            .with_detail(unread.join(" "))
-            .with_fix(tr!("Grant read access so the audit can evaluate this file"));
+        unreadable(em, "APP-031", Medium, tr!("PostgreSQL: rules open to any source (0.0.0.0/0)"), &unread);
     } else {
         em.pass("APP-031", Medium, tr!("PostgreSQL: pg_hba.conf has no rules open to 0.0.0.0/0"));
     }
@@ -423,9 +405,7 @@ fn samba(ctx: &Context, em: &mut Emitter, detected: &mut Vec<&str>) {
         ConfigRead::Absent => return,
         ConfigRead::Unreadable => {
             detected.push("samba");
-            em.error("APP-040", Medium, tr!("Config file present but could not be read; check could not be evaluated"))
-                .with_detail("/etc/samba/smb.conf")
-                .with_fix(tr!("Grant read access so the audit can evaluate this file"));
+            unreadable(em, "APP-040", Medium, tr!("Samba allows guest access"), &["/etc/samba/smb.conf"]);
             return;
         }
     };
@@ -612,6 +592,30 @@ mod tests {
     }
 
     #[test]
+    fn redis_dir_ilegible_no_es_pass() {
+        // Caso del DIRECTORIO ilegible (el que reportó la revisión): en Debian
+        // /etc/redis es 0750 redis:redis, asi que un no-root no puede ni hacer
+        // stat de /etc/redis/redis.conf: try_exists() devuelve Err(EACCES). El
+        // filtro de presencia debe conservar la ruta salvo que este
+        // DEFINITIVAMENTE ausente (Ok(false)) para que read_config la marque
+        // Unreadable->Error. Con el viejo try_exists().unwrap_or(false) la ruta
+        // se descartaba y APP-010 (critico) no se emitia: PASS/omision falsa.
+        let f = Fixture::new();
+        f.file("/etc/redis/redis.conf", "bind 0.0.0.0\n").mode("/etc/redis", 0o000);
+        // root ignora los bits de modo; si aun se puede leer el archivo a traves
+        // del directorio, no hay EACCES que probar: se omite el caso (y se
+        // restaura el modo para que Fixture::drop pueda limpiar el directorio).
+        if std::fs::read_to_string(f.ctx().path("/etc/redis/redis.conf")).is_ok() {
+            f.mode("/etc/redis", 0o755);
+            return;
+        }
+        let r = f.run(run);
+        f.mode("/etc/redis", 0o755);
+        assert_eq!(r["APP-010"].status, Status::Error, "directorio de redis ilegible no puede ser PASS");
+        assert!(r["APP-010"].detail.contains("/etc/redis/redis.conf"));
+    }
+
+    #[test]
     fn postgres_hba_presente_pero_ilegible_no_es_pass() {
         // pg_hba.conf presente pero ilegible: el control de 'trust' queda indeterminado,
         // nunca PASS (antes, read(...).unwrap_or_default() lo convertía en un PASS falso).
@@ -649,7 +653,7 @@ mod tests {
         f.dir("/etc/samba/smb.conf");
         let r = f.run(run);
         assert_eq!(r["APP-040"].status, Status::Error, "smb.conf ilegible no puede ser PASS");
-        assert_eq!(r["APP-040"].detail, "/etc/samba/smb.conf");
+        assert!(r["APP-040"].detail.contains("/etc/samba/smb.conf"));
     }
 
     #[test]
