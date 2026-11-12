@@ -1,5 +1,6 @@
 //! category: patching — port de checks.d/60-patching.sh.
 //! Actualizaciones de seguridad, reinicio pendiente, fin de soporte, repos sin firma.
+//! PAT-008 (sin equivalente en bash): CVEs sin corrección en servicios de red, vía debsecan.
 //!
 //! Divergencia con bash: en derivadas que no declaran ID_LIKE (ej. GoldenDog Linux) bash no reconocía
 //! la familia y todo quedaba N/A; acá la familia se deduce del gestor de paquetes (ver system.rs).
@@ -7,7 +8,7 @@
 use std::os::unix::fs::MetadataExt;
 
 use super::Context;
-use super::util::{civil_date, dir_files, glob, live_command_full, pkg_installed, read, unit_enabled};
+use super::util::{Timed, civil_date, dir_files, glob, live_command_full, live_command_timeout, pkg_installed, read, unit_enabled};
 use crate::model::{Emitter, ResultExt, Severity::*};
 use crate::system::OsFamily;
 use crate::tr;
@@ -29,6 +30,137 @@ pub fn run(ctx: &Context, em: &mut Emitter) {
     end_of_life(ctx, em);
     unsigned_repos(ctx, em);
     third_party_origins(ctx, em);
+    unfixed_cves(ctx, em);
+}
+
+/// Paquetes binarios de servicios de red (PAT-008) y las unidades de systemd que los ponen a correr:
+/// un CVE sin corrección solo se reporta si alguna está habilitada (apache2-bin instalado como
+/// dependencia, o cups/ssh en un desktop, no son un servicio expuesto).
+/// Un paquete terminado en `*` es un prefijo (postgresql-17, exim4-daemon-heavy); `%p` es el paquete.
+const NETWORK_SERVICES: &[(&str, &[&str])] = &[
+    ("apache2-bin", &["apache2.service"]),
+    ("nginx", &["nginx.service"]),
+    ("nginx-*", &["nginx.service"]),
+    ("lighttpd", &["lighttpd.service"]),
+    ("haproxy", &["haproxy.service"]),
+    ("squid", &["squid.service"]),
+    ("varnish", &["varnish.service"]),
+    ("openssh-server", &["ssh.service", "ssh.socket"]),
+    ("postfix", &["postfix.service"]),
+    ("exim4-daemon-*", &["exim4.service"]),
+    ("dovecot-core", &["dovecot.service", "dovecot.socket"]),
+    ("bind9", &["named.service", "bind9.service"]),
+    ("unbound", &["unbound.service"]),
+    ("dnsmasq-base", &["dnsmasq.service"]),
+    ("samba", &["smbd.service"]),
+    ("vsftpd", &["vsftpd.service"]),
+    ("proftpd-core", &["proftpd.service"]),
+    ("pure-ftpd", &["pure-ftpd.service"]),
+    ("postgresql-1*", &["postgresql.service"]),
+    ("mariadb-server", &["mariadb.service"]),
+    ("mariadb-server-core", &["mariadb.service"]),
+    ("redis-server", &["redis-server.service"]),
+    ("memcached", &["memcached.service"]),
+    ("cups-daemon", &["cups.service", "cups.socket"]),
+    ("isc-dhcp-server", &["isc-dhcp-server.service"]),
+    ("kea-dhcp4-server", &["kea-dhcp4-server.service"]),
+    ("openvpn", &["openvpn.service"]),
+    ("strongswan-charon", &["strongswan.service", "strongswan-starter.service"]),
+    ("tomcat1*", &["%p.service"]),
+];
+
+/// Unidades de systemd del servicio de red que provee `pkg`, o `None` si no es uno.
+fn service_units(pkg: &str) -> Option<Vec<String>> {
+    let (_, units) = NETWORK_SERVICES.iter().find(|(w, _)| match w.strip_suffix('*') {
+        Some(prefix) => pkg.starts_with(prefix),
+        None => pkg == *w,
+    })?;
+    Some(units.iter().map(|u| u.replace("%p", pkg)).collect())
+}
+
+/// Suite de Debian para debsecan a partir de /etc/debian_version ("13.6" → trixie, "forky/sid" → sid).
+/// Se usa en vez de VERSION_CODENAME porque las derivadas declaran su propio codename.
+pub fn debian_suite(debian_version: &str) -> Option<&'static str> {
+    let v = debian_version.trim();
+    if v.ends_with("/sid") {
+        return Some("sid");
+    }
+    match v.split('.').next()? {
+        "11" => Some("bullseye"),
+        "12" => Some("bookworm"),
+        "13" => Some("trixie"),
+        "14" => Some("forky"),
+        _ => None,
+    }
+}
+
+/// CVEs sin corrección por paquete en la salida `--format summary` de debsecan
+/// (`CVE-AAAA-N paquete (fixed, remotely exploitable, high urgency)`), solo de servicios de red
+/// con alguna unidad habilitada según `enabled`.
+pub fn debsecan_unfixed(out: &str, enabled: &dyn Fn(&str) -> bool) -> std::collections::BTreeMap<String, Vec<String>> {
+    let mut m: std::collections::BTreeMap<String, Vec<String>> = Default::default();
+    let mut active: std::collections::HashMap<String, bool> = Default::default();
+    for l in out.lines() {
+        let mut it = l.split_whitespace();
+        let (Some(cve), Some(pkg)) = (it.next(), it.next()) else { continue };
+        let notes = l.split_once('(').map(|(_, n)| n).unwrap_or("");
+        if !cve.starts_with("CVE-") || notes.split(',').any(|n| n.trim().trim_end_matches(')') == "fixed") {
+            continue;
+        }
+        // una consulta a systemd por paquete, no por CVE
+        let on = *active
+            .entry(pkg.to_string())
+            .or_insert_with(|| service_units(pkg).is_some_and(|u| u.iter().any(|u| enabled(u))));
+        if on {
+            m.entry(pkg.to_string()).or_default().push(cve.to_string());
+        }
+    }
+    m
+}
+
+/// PAT-008: CVEs publicados que todavía no tienen corrección en la distro (PAT-001 cubre los que sí).
+/// Es el hueco entre el anuncio del upstream y el DSA: el security tracker ya los lista ese mismo día.
+fn unfixed_cves(ctx: &Context, em: &mut Emitter) {
+    let title = tr!("No unfixed CVEs in network services");
+    let na = |em: &mut Emitter, why: &str| {
+        em.na("PAT-008", Medium, title).with_detail(why.to_string());
+    };
+    if ctx.os.family != OsFamily::Debian {
+        return na(em, &tr!("only Debian and derivatives (debsecan)"));
+    }
+    if ctx.os.id == "ubuntu" || ctx.os.id_like.split_whitespace().any(|x| x == "ubuntu") {
+        return na(em, &tr!("debsecan does not support Ubuntu"));
+    }
+    if ctx.fast {
+        return na(em, &tr!("skipped by --fast"));
+    }
+    let Some(suite) = read(ctx, "/etc/debian_version").as_deref().and_then(debian_suite) else {
+        return na(em, &tr!("could not determine the Debian release"));
+    };
+    let args = ["--suite", suite, "--format", "summary", "--no-obsolete"];
+    let out = match live_command_timeout(ctx, "debsecan", &args, std::time::Duration::from_secs(60)) {
+        None => return na(em, &tr!("debsecan not installed (apt install debsecan)")),
+        Some(Timed::TimedOut) => return na(em, &tr!("debsecan did not answer in 60 s")),
+        Some(Timed::Done(o)) if !o.ok => {
+            let e = o.stderr.lines().find(|l| !l.trim().is_empty()).unwrap_or("").to_string();
+            return na(em, &tr!("debsecan failed (no network?): {e}", e = e));
+        }
+        Some(Timed::Done(o)) => o.stdout,
+    };
+    let unfixed = debsecan_unfixed(&out, &|u| unit_enabled(ctx, u));
+    if unfixed.is_empty() {
+        em.pass("PAT-008", Medium, title)
+            .with_detail(tr!("enabled services, per the Debian security tracker ({suite})", suite = suite));
+        return;
+    }
+    let n: usize = unfixed.values().map(Vec::len).sum();
+    let detail: Vec<String> = unfixed
+        .iter()
+        .map(|(p, c)| if c.len() <= 4 { format!("{p}: {}", c.join(" ")) } else { format!("{p}: {} (+{})", c[..4].join(" "), c.len() - 4) })
+        .collect();
+    em.warn("PAT-008", Medium, &tr!("Network services with unfixed CVEs ({n})", n = n))
+        .with_detail(detail.join("; "))
+        .with_fix(tr!("No update yet: check security-tracker.debian.org for mitigations (PAT-001 will flag the update)"));
 }
 
 /// Paquetes con actualización de seguridad en la salida de `apt-get -s upgrade`,
@@ -401,6 +533,48 @@ mod tests {
     use crate::checks::fixture::Fixture;
     use crate::model::Status;
     use crate::system::OsInfo;
+
+    #[test]
+    fn unidades_de_servicio() {
+        assert_eq!(service_units("openssh-server").unwrap(), ["ssh.service", "ssh.socket"]);
+        assert_eq!(service_units("tomcat10").unwrap(), ["tomcat10.service"]);
+        assert_eq!(service_units("exim4-daemon-heavy").unwrap(), ["exim4.service"]);
+        assert!(service_units("linux-libc-dev").is_none());
+        assert!(service_units("postgresql-client-17").is_none());
+    }
+
+    #[test]
+    fn suite_de_debian() {
+        assert_eq!(debian_suite("13.6\n"), Some("trixie"));
+        assert_eq!(debian_suite("12.11"), Some("bookworm"));
+        assert_eq!(debian_suite("forky/sid"), Some("sid"));
+        assert_eq!(debian_suite("10.13"), None);
+    }
+
+    #[test]
+    fn debsecan_solo_sin_corregir_y_de_servicios() {
+        let out = "\
+CVE-2026-119618 apache2-bin
+CVE-2026-42356 apache2-bin (fixed)
+CVE-2026-106023 apache2-bin (remotely exploitable, high urgency)
+CVE-2026-1 linux-libc-dev
+CVE-2026-2 postgresql-17 (low urgency)
+CVE-2026-3 openssh-server (fixed, remotely exploitable)
+CVE-2026-4 apache2-utils
+CVE-2026-5 postgresql-client-17
+TEMP-0000000-ABCDEF bind9
+";
+        let all = |_: &str| true;
+        let m = debsecan_unfixed(out, &all);
+        assert_eq!(m.len(), 2, "{m:?}");
+        assert_eq!(m["apache2-bin"], ["CVE-2026-119618", "CVE-2026-106023"]);
+        assert_eq!(m["postgresql-17"], ["CVE-2026-2"]);
+
+        // apache2-bin instalado pero apache2.service deshabilitado: no cuenta
+        let pg = |u: &str| u == "postgresql.service";
+        let m = debsecan_unfixed(out, &pg);
+        assert_eq!(m.keys().collect::<Vec<_>>(), ["postgresql-17"]);
+    }
 
     #[test]
     fn parsea_apt_get_simulado() {

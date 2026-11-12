@@ -5,7 +5,7 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: linaudit 0.2.0-dev\n"
+"Project-Id-Version: linaudit 0.3.0\n"
 "Report-Msgid-Bugs-To: https://github.com/alexiarstein/linaudit/issues\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
@@ -1418,7 +1418,7 @@ msgstr ""
 msgid "Files without an owner or group"
 msgstr ""
 
-#: crates/linaudit-core/src/checks/filesystem.rs crates/linaudit-core/src/checks/persistence.rs
+#: crates/linaudit-core/src/checks/filesystem.rs crates/linaudit-core/src/checks/patching.rs crates/linaudit-core/src/checks/persistence.rs
 msgid "skipped by --fast"
 msgstr ""
 
@@ -1957,6 +1957,49 @@ msgstr ""
 
 #: crates/linaudit-core/src/checks/patching.rs
 msgid "Pending security updates"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "No unfixed CVEs in network services"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "only Debian and derivatives (debsecan)"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "debsecan does not support Ubuntu"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "could not determine the Debian release"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "debsecan not installed (apt install debsecan)"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "debsecan did not answer in 60 s"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/patching.rs
+#. {name} is replaced by a value: keep it exactly as is
+msgid "debsecan failed (no network?): {e}"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/patching.rs
+#. {name} is replaced by a value: keep it exactly as is
+msgid "enabled services, per the Debian security tracker ({suite})"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/patching.rs
+#. {name} is replaced by a value: keep it exactly as is
+msgid "Network services with unfixed CVEs ({n})"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "No update yet: check security-tracker.debian.org for mitigations (PAT-001 will flag the update)"
 msgstr ""
 
 #: crates/linaudit-core/src/checks/patching.rs
@@ -2519,6 +2562,19 @@ msgstr ""
 
 #: crates/linaudit-core/src/checks/ssh.rs
 msgid "could not read or evaluate the configuration (not root?)"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Setting could not be determined"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/ssh.rs
+#. {name} is replaced by a value: keep it exactly as is
+msgid "{key}: skipped config files: {files}"
+msgstr ""
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Review the skipped files; the static parse cannot tell which value sshd uses"
 msgstr ""
 
 #: crates/linaudit-core/src/checks/ssh.rs

@@ -35,6 +35,7 @@ Depends:
 Recommends:
  iproute2,
 Suggests:
+ debsecan,
  distro-info-data,
  libcap2-bin,
  openssh-client,

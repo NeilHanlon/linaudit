@@ -235,16 +235,51 @@ pub fn run(ctx: &Context, em: &mut Emitter) {
             em.na("PER-012", Medium, tr!("Out-of-tree kernel modules")).with_detail(tr!("no /proc/sys/kernel/tainted"));
         }
         Some(t) if t & (4096 | 8192) != 0 => {
+            let mods = tainting_modules(ctx);
+            let mut detail = taint_summary(t);
+            if !mods.is_empty() {
+                let more = if mods.len() > 8 { format!(" (+{})", mods.len() - 8) } else { String::new() };
+                detail = format!("{detail}: {}{more}", mods.iter().take(8).cloned().collect::<Vec<_>>().join(", "));
+            }
             em.warn("PER-012", Medium, tr!("Out-of-tree or unsigned kernel modules loaded"))
-                .with_detail(format!("tainted={t}"))
+                .with_detail(detail)
                 .with_fix(tr!("Review with lsmod/modinfo (they may be legitimate: ZFS, NVIDIA, VirtualBox)"));
         }
         Some(t) => {
-            em.pass("PER-012", Medium, tr!("No out-of-tree or unsigned kernel modules")).with_detail(format!("tainted={t}"));
+            em.pass("PER-012", Medium, tr!("No out-of-tree or unsigned kernel modules")).with_detail(taint_summary(t));
         }
     }
 
     processes(ctx, em);
+}
+
+/// Letras de taint del kernel por bit, en el orden de Documentation/admin-guide/tainted-kernels.rst
+/// (P=propietario, W=warning, O=fuera del árbol, E=sin firmar...).
+const TAINT_FLAGS: &[u8; 19] = b"PFSRMBUDAWCIOELKXTN";
+
+/// `tainted=12801 (P W O E)`: el número de /proc/sys/kernel/tainted es una máscara de bits, no un módulo.
+pub fn taint_summary(t: u64) -> String {
+    let letters: Vec<String> = (0..64)
+        .filter(|b| t >> b & 1 == 1)
+        .map(|b| TAINT_FLAGS.get(b).map_or(format!("bit{b}"), |c| (*c as char).to_string()))
+        .collect();
+    if letters.is_empty() { format!("tainted={t}") } else { format!("tainted={t} ({})", letters.join(" ")) }
+}
+
+/// Módulos que marcaron el kernel: los que tienen letras en /sys/module/<m>/taint (ej. nvidia: POE).
+fn tainting_modules(ctx: &Context) -> Vec<String> {
+    let Ok(dir) = std::fs::read_dir(ctx.path("/sys/module")) else { return Vec::new() };
+    let mut v: Vec<String> = dir
+        .flatten()
+        .filter_map(|e| {
+            let name = e.file_name().to_string_lossy().into_owned();
+            let t = std::fs::read_to_string(e.path().join("taint")).ok()?;
+            let t = t.trim();
+            (!t.is_empty()).then(|| format!("{name}({t})"))
+        })
+        .collect();
+    v.sort();
+    v
 }
 
 /// PER-007: binarios del sistema modificados respecto del paquete original.
@@ -461,6 +496,14 @@ mod tests {
     }
 
     #[test]
+    fn letras_de_taint() {
+        assert_eq!(taint_summary(0), "tainted=0");
+        assert_eq!(taint_summary(512), "tainted=512 (W)");
+        assert_eq!(taint_summary(12801), "tainted=12801 (P W O E)");
+        assert_eq!(taint_summary(1 << 20), "tainted=1048576 (bit20)");
+    }
+
+    #[test]
     fn sistema_limpio() {
         let f = Fixture::new();
         f.file("/etc/crontab", "17 * * * * root cd / && run-parts --report /etc/cron.hourly\n")
@@ -485,6 +528,9 @@ mod tests {
             .file("/etc/pam.d/sshd", "auth sufficient pam_permit.so\nsession optional pam_exec.so /usr/local/bin/x\n")
             .file("/etc/rc.local", "#!/bin/sh\n/opt/agent/start\nexit 0\n")
             .file("/proc/sys/kernel/tainted", "12801\n")
+            .file("/sys/module/nvidia/taint", "POE\n")
+            .file("/sys/module/nvidia_drm/taint", "POE\n")
+            .file("/sys/module/ext4/taint", "\n")
             .file("/root/.ssh/authorized_keys", "ssh-ed25519 AAAA admin\nfrom=\"10.0.0.1\" ssh-ed25519 BBBB backup\n");
         let r = f.run(run);
         assert_eq!(r["PER-001"].detail, "/usr/lib/libprocesshider.so ");
@@ -498,6 +544,7 @@ mod tests {
         // las líneas que empiezan con # (incluido el shebang) no cuentan, como en bash
         assert_eq!(r["PER-011"].detail, "/opt/agent/start;");
         assert_eq!(r["PER-012"].status, Status::Warn);
+        assert_eq!(r["PER-012"].detail, "tainted=12801 (P W O E): nvidia(POE), nvidia_drm(POE)");
     }
 
     #[test]

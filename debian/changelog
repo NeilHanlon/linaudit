@@ -1,8 +1,17 @@
-linaudit (0.2.0-2) unstable; urgency=medium
+linaudit (0.3.0-1) unstable; urgency=medium
 
-  * APP-050/APP-051: detect Apache by its main config file (apache2.conf /
-    httpd.conf) instead of the /etc/apache2 directory, which javascript-common
-    creates on Debian without Apache installed (false positive).
+  * New upstream release.
+  * PAT-008: report CVEs without a fix yet in enabled network services
+    (Apache, nginx, OpenSSH, Postfix, PostgreSQL...), using debsecan and the
+    Debian security tracker. N/A when debsecan is not installed.
+  * PER-012: decode the taint mask into its flags and list the modules that
+    tainted the kernel, e.g. "tainted=12801 (P W O E): nvidia(POE), ...".
+  * debian/control: suggest debsecan.
+
+ -- Alexia Michelle <alexia@lexiworks.dev>  Thu, 12 Nov 2026 00:15:33 -0300
+
+linaudit (0.2.0-3) unstable; urgency=medium
+
   * FS-017: only list directories that are world-writable without the sticky
     bit; any directory with an orphan uid/gid was being reported (GitHub #4).
   * PER-013: exclude linaudit's own process (and its parent, matched by
@@ -19,7 +28,15 @@ linaudit (0.2.0-2) unstable; urgency=medium
   * FS-018: group orphan files under their topmost orphan directory, showing
     uid:gid and the number of entries (GitHub #1).
 
- -- Alexia Michelle <alexia@lexiworks.dev>  Wed, 11 Nov 2026 23:37:43 -0300
+ -- Alexia Michelle <alexia@lexiworks.dev>  Wed, 11 Nov 2026 23:54:01 -0300
+
+linaudit (0.2.0-2) unstable; urgency=medium
+
+  * APP-050/APP-051: detect Apache by its main config file (apache2.conf /
+    httpd.conf) instead of the /etc/apache2 directory, which javascript-common
+    creates on Debian without Apache installed (false positive).
+
+ -- Alexia Michelle <alexia@lexiworks.dev>  Wed, 11 Nov 2026 16:34:04 -0300
 
 linaudit (0.2.0-1) UNRELEASED; urgency=medium
 

@@ -1430,6 +1430,7 @@ msgid "Files without an owner or group"
 msgstr "Archivos sin dueño o sin grupo"
 
 #: crates/linaudit-core/src/checks/filesystem.rs
+#: crates/linaudit-core/src/checks/patching.rs
 #: crates/linaudit-core/src/checks/persistence.rs
 msgid "skipped by --fast"
 msgstr "omitido por --fast"
@@ -1973,6 +1974,49 @@ msgstr "no aplica a dnf/yum (usa caché por repo)"
 #: crates/linaudit-core/src/checks/patching.rs
 msgid "Pending security updates"
 msgstr "Actualizaciones de seguridad pendientes"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "No unfixed CVEs in network services"
+msgstr "Sin CVEs sin corregir en servicios de red"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "only Debian and derivatives (debsecan)"
+msgstr "solo Debian y derivadas (debsecan)"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "debsecan does not support Ubuntu"
+msgstr "debsecan no soporta Ubuntu"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "could not determine the Debian release"
+msgstr "no se pudo determinar la versión de Debian"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "debsecan not installed (apt install debsecan)"
+msgstr "debsecan no está instalado (apt install debsecan)"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "debsecan did not answer in 60 s"
+msgstr "debsecan no respondió en 60 s"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "debsecan failed (no network?): {e}"
+msgstr "debsecan falló (¿sin red?): {e}"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "enabled services, per the Debian security tracker ({suite})"
+msgstr "servicios habilitados, según el security tracker de Debian ({suite})"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "Network services with unfixed CVEs ({n})"
+msgstr "Servicios de red con CVEs sin corregir ({n})"
+
+#: crates/linaudit-core/src/checks/patching.rs
+msgid "No update yet: check security-tracker.debian.org for mitigations (PAT-001 will flag the update)"
+msgstr "Todavía no hay actualización: ver mitigaciones en security-tracker.debian.org (PAT-001 avisará cuando salga)"
 
 #: crates/linaudit-core/src/checks/patching.rs
 msgid "apt-get unavailable"
@@ -2535,6 +2579,19 @@ msgstr "Configuración de sshd"
 #: crates/linaudit-core/src/checks/ssh.rs
 msgid "could not read or evaluate the configuration (not root?)"
 msgstr "no se pudo leer ni evaluar la configuración (¿sin root?)"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Setting could not be determined"
+msgstr "No se pudo determinar el ajuste"
+
+#. {name} is replaced by a value: keep it exactly as is
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "{key}: skipped config files: {files}"
+msgstr "{key}: archivos de config omitidos: {files}"
+
+#: crates/linaudit-core/src/checks/ssh.rs
+msgid "Review the skipped files; the static parse cannot tell which value sshd uses"
+msgstr "Revisar los archivos omitidos; el parseo estático no puede saber qué valor usa sshd"
 
 #: crates/linaudit-core/src/checks/ssh.rs
 msgid " (static config, no defaults: sshd -T unavailable)"

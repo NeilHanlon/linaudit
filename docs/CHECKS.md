@@ -111,6 +111,7 @@ El título es el del caso "cumple"; cuando falla, el reporte muestra el detalle 
 | PAT-005 | HIGH | $OS_PRETTY dentro de soporte hasta $eol |
 | PAT-006 | HIGH | Repositorios con verificación de firma |
 | PAT-007 | INFO | Orígenes de paquetes no estándar |
+| PAT-008 | MEDIUM | Sin CVEs sin corregir en servicios de red (requiere debsecan; consulta security-tracker.debian.org) |
 
 ## hardening
 
