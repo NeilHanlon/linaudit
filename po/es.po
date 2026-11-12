@@ -1198,6 +1198,14 @@ msgid "Remove --privileged and the docker.sock mount unless justified"
 msgstr "Quitar --privileged y el montaje de docker.sock salvo necesidad justificada"
 
 #: crates/linaudit-core/src/checks/apps.rs
+msgid "Config file present but could not be read; check could not be evaluated"
+msgstr "Archivo de configuración presente pero ilegible; no se pudo evaluar el control"
+
+#: crates/linaudit-core/src/checks/apps.rs
+msgid "Grant read access so the audit can evaluate this file"
+msgstr "Otorga permiso de lectura para que la auditoría pueda evaluar el archivo"
+
+#: crates/linaudit-core/src/checks/apps.rs
 msgid "PostgreSQL: no 'trust' for network connections"
 msgstr "PostgreSQL: sin 'trust' para conexiones de red"
 
